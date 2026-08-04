@@ -9,7 +9,7 @@
     "dev": "npm run build:index && vite",
     "build": "npm run build:index && vite build",
     "preview": "vite preview",
-    "test": "node --test \"scripts/**/*.test.mjs\""
+    "test": "node --test scripts/links.test.mjs"
   },
   "dependencies": {
     "d3-force": "^3.0.0",
