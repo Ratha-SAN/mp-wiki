@@ -70,10 +70,19 @@ while the layout settles, hover to isolate a node and its immediate neighbours, 
 open a note. `Depth` limits the view to N hops from the open note; `Folders` and `Tags`
 filter; `Fit` re-frames.
 
-Nodes are coloured by role — note, open note, unresolved — rather than by folder. A
-colourblind-safe categorical palette only supports about three hues when every pair can
-end up adjacent, which is exactly what a node-link layout does, so folder is a filter and a
-tree instead of a hue. Node size follows degree.
+`Colour` switches how nodes are filled, and the choice is remembered:
+
+- **Role** (default) — note, open note, unresolved. Two hues, validated to stay separable
+  under every kind of colour vision on both surfaces.
+- **Folder** — the eight largest folders take categorical slots in fixed order, everything
+  else is "Other". Slots are assigned once from the whole vault, so filtering the graph
+  never repaints the folders that survive. Past three hues a node-link layout can put any
+  pair side by side and separation is no longer guaranteed, which is why this is opt-in:
+  the legend, the hairline outline on every node, and the labels carry identity alongside
+  the colour.
+
+The open note keeps a ring in both modes, and unresolved nodes stay hollow and dashed, so
+neither depends on hue. Node size follows degree.
 
 ## Deploying
 

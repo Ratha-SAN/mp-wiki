@@ -37,10 +37,17 @@ interface Theme {
   edgeStrong: string;
   label: string;
   labelHalo: string;
+  series: string[];
+  other: string;
 }
+
+type ColorMode = 'role' | 'folder';
 
 const MIN_ZOOM = 0.12;
 const MAX_ZOOM = 6;
+/** Categorical hues are assigned in fixed order and never cycled. */
+const SERIES_SLOTS = 8;
+const COLOR_KEY = 'mp-wiki:graph-colour';
 
 export class GraphView {
   private readonly opts: GraphOptions;
@@ -75,12 +82,17 @@ export class GraphView {
   private tags = new Set<string>();
   private showUnresolved = true;
   private hops = 0; // 0 = whole vault
+  private colorMode: ColorMode = readColorMode();
+  /** folder path -> categorical slot, fixed for the whole session (never re-ranked). */
+  private readonly folderSlot: Map<string, number>;
+  private readonly legend = document.createElement('ul');
 
   constructor(opts: GraphOptions) {
     this.opts = opts;
     this.nodes = opts.data.nodes.map((ref) => ({ ref }));
     this.byId = new Map(this.nodes.map((node) => [node.ref.id, node]));
     this.neighbours = buildAdjacency(opts.data);
+    this.folderSlot = assignFolderSlots(opts.data);
 
     this.canvas.className = 'graph-canvas';
     this.canvas.setAttribute('role', 'application');
@@ -89,14 +101,17 @@ export class GraphView {
     if (!ctx) throw new Error('Canvas 2D is unavailable');
     this.ctx = ctx;
 
-    opts.container.append(this.buildToolbar(), this.canvas, this.buildLegend());
+    this.legend.className = 'graph-legend';
+    opts.container.append(this.buildToolbar(), this.canvas, this.legend);
 
     this.readTheme();
+    this.renderLegend();
     this.bindPointer();
 
     new ResizeObserver(() => this.resize()).observe(opts.container);
     new MutationObserver(() => {
       this.readTheme();
+      this.renderLegend();
       this.draw();
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
@@ -195,6 +210,21 @@ export class GraphView {
     });
     hopsWrap.append(hops);
 
+    const colourWrap = document.createElement('label');
+    colourWrap.className = 'graph-field';
+    colourWrap.innerHTML = '<span>Colour</span>';
+    const colour = document.createElement('select');
+    colour.innerHTML = '<option value="role">Role</option><option value="folder">Folder</option>';
+    colour.value = this.colorMode;
+    colour.title = 'Colour nodes by their role in the graph, or by the folder they live in';
+    colour.addEventListener('change', () => {
+      this.colorMode = colour.value as ColorMode;
+      writeColorMode(this.colorMode);
+      this.renderLegend();
+      this.draw();
+    });
+    colourWrap.append(colour);
+
     const unresolved = document.createElement('label');
     unresolved.className = 'graph-check';
     const box = document.createElement('input');
@@ -216,19 +246,52 @@ export class GraphView {
     });
 
     this.countEl.className = 'graph-count';
-    bar.append(hopsWrap, unresolved, fit, this.countEl);
+    bar.append(hopsWrap, colourWrap, unresolved, fit, this.countEl);
     return bar;
   }
 
-  private buildLegend(): HTMLElement {
-    const legend = document.createElement('ul');
-    legend.className = 'graph-legend';
-    legend.innerHTML = `
-      <li><span class="swatch swatch-note"></span>Note</li>
-      <li><span class="swatch swatch-active"></span>Open note</li>
-      <li><span class="swatch swatch-unresolved"></span>Unresolved link</li>
-    `;
-    return legend;
+  /**
+   * Identity is never carried by colour alone: the legend is always present, node
+   * labels appear on hover and at moderate zoom, and the file tree names every note.
+   */
+  private renderLegend(): void {
+    const entry = (swatch: string, label: string) =>
+      `<li><span class="swatch" style="${swatch}"></span>${escapeHtml(label)}</li>`;
+    const ring = `background:${this.theme.surface};box-shadow:inset 0 0 0 2.5px ${this.theme.active}`;
+
+    if (this.colorMode === 'role') {
+      this.legend.innerHTML = [
+        entry(`background:${this.theme.node}`, 'Note'),
+        entry(`background:${this.theme.active}`, 'Open note'),
+        entry(`background:${this.theme.surface};border:1.5px dashed ${this.theme.unresolved}`, 'Unresolved link'),
+      ].join('');
+      return;
+    }
+
+    const slots = [...this.folderSlot.entries()].sort((a, b) => a[1] - b[1]);
+    const rows = slots.map(([folder, slot]) =>
+      entry(`background:${this.theme.series[slot]}`, folder || '(root)'),
+    );
+    if (this.hasOtherFolders()) rows.push(entry(`background:${this.theme.other}`, 'Other folders'));
+    rows.push(entry(ring, 'Open note'));
+    rows.push(
+      entry(`background:${this.theme.surface};border:1.5px dashed ${this.theme.unresolved}`, 'Unresolved link'),
+    );
+    this.legend.innerHTML = rows.join('');
+  }
+
+  private hasOtherFolders(): boolean {
+    return this.opts.data.nodes.some(
+      (node) => node.kind === 'note' && !this.folderSlot.has(node.folder ?? ''),
+    );
+  }
+
+  private fillFor(node: GraphNode): string {
+    if (this.colorMode === 'role') {
+      return node.id === this.activeId ? this.theme.active : this.theme.node;
+    }
+    const slot = this.folderSlot.get(node.folder ?? '');
+    return slot === undefined ? this.theme.other : this.theme.series[slot];
   }
 
   /* --------------------------------------------------------- graph rebuild */
@@ -347,6 +410,8 @@ export class GraphView {
       edgeStrong: pick('--graph-edge-strong', '#8f959f'),
       label: pick('--graph-label', '#2b2b2b'),
       labelHalo: pick('--graph-label-halo', '#ffffff'),
+      other: pick('--graph-other', '#6f6f68'),
+      series: Array.from({ length: SERIES_SLOTS }, (_, i) => pick(`--series-${i + 1}`, '#2a78d6')),
     };
   }
 
@@ -403,14 +468,23 @@ export class GraphView {
         ctx.stroke();
         ctx.setLineDash([]);
       } else {
-        ctx.fillStyle = isActive ? theme.active : lit ? theme.node : theme.nodeMuted;
+        ctx.fillStyle = lit ? this.fillFor(node.ref) : theme.nodeMuted;
         ctx.fill();
+        if (this.colorMode === 'folder') {
+          // Some categorical hues sit under 3:1 against a light surface; a hairline
+          // keeps every node's shape readable regardless of its fill.
+          ctx.lineWidth = 1 / t.k;
+          ctx.strokeStyle = theme.edgeStrong;
+          ctx.globalAlpha = lit ? 0.55 : 0.16;
+          ctx.stroke();
+          ctx.globalAlpha = lit ? 1 : 0.22;
+        }
         if (isActive || node === this.hovered) {
           ctx.lineWidth = 2.5 / t.k;
           ctx.strokeStyle = theme.surface;
           ctx.stroke();
-          ctx.lineWidth = 1.5 / t.k;
-          ctx.strokeStyle = isActive ? theme.active : theme.node;
+          ctx.lineWidth = (isActive ? 2.5 : 1.5) / t.k;
+          ctx.strokeStyle = isActive ? theme.active : this.fillFor(node.ref);
           ctx.stroke();
         }
       }
@@ -609,6 +683,25 @@ function uniqueFolders(data: GraphData): { path: string; count: number }[] {
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
+/**
+ * Folders claim categorical slots by note count once, at load. Ranking never changes
+ * afterwards, so filtering the graph cannot repaint the folders that survive.
+ */
+function assignFolderSlots(data: GraphData): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const node of data.nodes) {
+    if (node.kind !== 'note') continue;
+    const folder = node.folder ?? '';
+    counts.set(folder, (counts.get(folder) ?? 0) + 1);
+  }
+  return new Map(
+    [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, SERIES_SLOTS)
+      .map(([folder], index) => [folder, index]),
+  );
+}
+
 function matchesFolder(folder: string, selected: Set<string>): boolean {
   if (selected.has(folder)) return true;
   for (const candidate of selected) {
@@ -718,4 +811,20 @@ function truncate(value: string, max: number): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+function readColorMode(): ColorMode {
+  return localStorage.getItem(COLOR_KEY) === 'folder' ? 'folder' : 'role';
+}
+
+function writeColorMode(mode: ColorMode): void {
+  try {
+    localStorage.setItem(COLOR_KEY, mode);
+  } catch {
+    /* private mode: the choice just is not remembered */
+  }
 }
