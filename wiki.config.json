@@ -1,0 +1,16 @@
+{
+  "vaultPath": "sample-vault",
+  "outDir": "public/wiki-data",
+  "siteTitle": "medphys-wiki",
+  "homeNote": "Index",
+  "exclude": [
+    "**/.obsidian/**",
+    "**/.trash/**",
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/templates/**"
+  ],
+  "copyAssets": true,
+  "imageExtensions": ["png", "jpg", "jpeg", "gif", "svg", "webp", "avif", "bmp"],
+  "fileExtensions": ["pdf", "mp4", "webm", "mp3", "wav", "ogg", "zip", "csv", "xlsx", "docx", "pptx"]
+}

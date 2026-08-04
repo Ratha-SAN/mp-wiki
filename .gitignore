@@ -1,0 +1,5 @@
+node_modules/
+dist/
+public/wiki-data/
+.DS_Store
+*.log

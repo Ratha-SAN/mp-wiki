@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 240" width="420" height="240" role="img" aria-label="Percentage depth dose curve">
+  <rect width="420" height="240" fill="#ffffff"/>
+  <g stroke="#d8dee9" stroke-width="1">
+    <line x1="50" y1="200" x2="400" y2="200"/>
+    <line x1="50" y1="20" x2="50" y2="200"/>
+    <line x1="50" y1="60" x2="400" y2="60" stroke-dasharray="4 4"/>
+    <line x1="50" y1="130" x2="400" y2="130" stroke-dasharray="4 4"/>
+  </g>
+  <path d="M50 170 C 62 96, 74 62, 95 55 C 140 50, 210 92, 290 138 C 330 160, 370 176, 400 184"
+        fill="none" stroke="#2f6f4f" stroke-width="2.5"/>
+  <circle cx="95" cy="55" r="3.5" fill="#2f6f4f"/>
+  <text x="104" y="50" font-family="system-ui, sans-serif" font-size="11" fill="#3b4252">d(max)</text>
+  <text x="225" y="228" font-family="system-ui, sans-serif" font-size="12" fill="#3b4252" text-anchor="middle">Depth in water (cm)</text>
+  <text x="16" y="115" font-family="system-ui, sans-serif" font-size="12" fill="#3b4252" transform="rotate(-90 16 115)" text-anchor="middle">PDD (%)</text>
+  <text x="30" y="64" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" text-anchor="end">100</text>
+  <text x="30" y="134" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" text-anchor="end">60</text>
+  <text x="30" y="204" font-family="system-ui, sans-serif" font-size="10" fill="#6b7280" text-anchor="end">20</text>
+</svg>

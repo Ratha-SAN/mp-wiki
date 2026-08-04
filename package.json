@@ -1,0 +1,27 @@
+{
+  "name": "mp-wiki",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static knowledge-graph + file-tree viewer for a Markdown wiki.",
+  "scripts": {
+    "build:index": "node scripts/build-index.mjs",
+    "dev": "npm run build:index && vite",
+    "build": "npm run build:index && vite build",
+    "preview": "vite preview",
+    "test": "node --test \"scripts/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "d3-force": "^3.0.0",
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3",
+    "katex": "^0.16.22",
+    "markdown-it": "^14.1.0"
+  },
+  "devDependencies": {
+    "@types/d3-force": "^3.0.10",
+    "@types/node": "^26.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.14"
+  }
+}
