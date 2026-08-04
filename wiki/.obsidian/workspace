@@ -1,0 +1,102 @@
+{
+  "main": {
+    "id": "278c66c08db4f413",
+    "type": "split",
+    "children": [
+      {
+        "id": "2e3ac7e01f2f4bf8",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "concept_biodosimetry-techniques.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "54f63358c201f871",
+    "type": "split",
+    "children": [
+      {
+        "id": "8d662276122d5646",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d1255c16c910a30f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "cbbaa78f0b7d2cf5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 411
+  },
+  "right": {
+    "id": "a9815e08104f052b",
+    "type": "split",
+    "children": [
+      {
+        "id": "a7dfffe42695d279",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "116b3f44c648c340",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "concept_biodosimetry-techniques.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "2e3ac7e01f2f4bf8",
+  "lastOpenFiles": [
+    "concept_biodosimetry-techniques.md",
+    "protocol_ICRU-62-photon-beam-therapy-supplement.md",
+    "protocol_ICRU-56-beta-ray-dosimetry.md",
+    "concept_non-targeted-and-low-dose-effects.md",
+    "concept_fractionation.md",
+    "concept_ethics-and-risk-communication-in-radiation-protection.md",
+    "concept_cell-death-and-survival-curves.md",
+    "concept_cancer-molecular-biology.md",
+    "technique_SBRT.md",
+    "protocol_ICRU-74-patient-dosimetry-imaging.md"
+  ]
+}

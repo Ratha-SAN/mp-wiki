@@ -1,0 +1,27 @@
+---
+type: protocol
+sources: ["MP Library/1979_@medphyslib_ICRU_Committee.pdf"]
+updated: 2026-08-04
+---
+
+## Synthesis
+
+**What this report is.** ICRU Report 31, *Average Energy Required to Produce an Ion Pair* (1979), is a compiled reference of experimental W-values — not a clinical prescribing/reporting standard like the rest of this wiki's ICRU pages, but the underlying physical-constants report that makes ionization-chamber dosimetry (the basis of absolute dose calibration in radiotherapy, and therefore indirectly of every dose number in this wiki) possible (MP Library/1979_@medphyslib_ICRU_Committee.pdf).
+
+**Definition.** W is the mean energy expended in a gas per ion pair formed: W = E/N, where E is the initial kinetic energy of a charged particle fully dissipated in the gas and N is the mean number of ion pairs produced (including ions from bremsstrahlung/secondary radiation). The differential value w = dE/dN describes the local relationship for a particle losing only part of its energy in a thin absorber layer; w and W converge for particles that deposit most of their energy in the gas. Both quantities are far more energy-independent than either the mean ionization potential or the excitation energy alone — the report's chapter 3 traces this empirical fact to how energy partitions between ionizing and non-ionizing (excitation) collisions across the full slowing-down history of a particle, a partition that turns out to be relatively insensitive to particle type/energy at energies well above the valence-electron energy scale.
+
+**Why this underlies clinical dosimetry.** Bragg-Gray cavity theory relates the ionization measured in a small gas-filled cavity (an ionization chamber) to the absorbed dose in the surrounding medium via D = (measured charge/mass) × (W/e) × (stopping-power ratio, medium:gas) — the W/e term converts measured charge directly into absorbed energy. Every absolute photon-beam dose calibration (the starting point for every Gy value elsewhere in this wiki, including [[protocol_ICRU-50-photon-beam-therapy]]'s reference-dose reporting and every organ-dose figure in [[protocol_HyTEC-dose-constraints]]) ultimately traces back through this constant.
+
+**Headline recommended value.** For dry air and electrons — the practically dominant case for radiotherapy ionization-chamber dosimetry — the report recommends **W_dry-air = (33.85 ± 0.15) eV**, derived from a weighted reconciliation of 13 independent absolute measurements (calorimetric, chemical-dosimetric, and reference-gas methods) spanning 1957–1977, after correcting each to a common Spencer-Attix stopping-power basis. This superseded the earlier ICRU (1964) recommended value, which the report found was not, in fact, valid for dry air once humidity effects were properly disentangled (a small but nonzero effect: water vapor can change W by up to ~0.3% relative to dry air, addressed in the report's own humidity-correction curves).
+
+**W is energy-independent for fast particles, but not universally.** For electrons and alpha particles at energies well above the ionization threshold (electrons above roughly a few hundred eV; alpha particles above ~1 MeV for noble gases), W is essentially constant with energy — the empirical basis for treating W/e as a fixed calibration constant in clinical dosimetry. Below these thresholds, and for heavier ions generally, W rises substantially with decreasing energy (e.g., W for alpha particles in TE gas rises from ~31 eV at 10 MeV to >45 eV below 100 keV) because a growing fraction of the particle's energy is lost to non-ionizing nuclear scattering rather than to ionization/excitation — a caution relevant to any dosimetry involving heavy charged particles or very-low-energy secondary electrons, distinct from photon/electron megavoltage beam dosimetry.
+
+**Solids and liquids.** W is far smaller in solids than in gases because the energy gap between valence and conduction bands (~1 eV in semiconductors) is much smaller than a gas ionization potential (~10 eV) — e.g., silicon w = 3.62–3.68 eV depending on particle type, germanium w ≈ 2.97 eV. This underlies why solid-state (diode/silicon) detectors produce a much larger ionization signal per unit absorbed dose than gas-filled chambers, at the cost of requiring their own energy/particle-type-dependent calibration rather than relying on the single gas W constant. See [[equipment_radiation-detectors]] for the detector-hardware side of this distinction.
+
+## Cross-links
+
+Underlies the absolute-dose calibration basis for [[protocol_ICRU-50-photon-beam-therapy]] and every dose figure reported elsewhere in this wiki. Directly relevant to [[equipment_radiation-detectors]] (ionization chamber and solid-state/semiconductor detector physics) — that page currently discusses detector types qualitatively without the underlying W-value calibration constant; this page supplies that missing quantitative link.
+
+## History
+
+- 2026-08-04: Page created from ingest of ICRU Report 31 (1979), read substantially (Introduction §1.1–1.3; Theory §3.1 introduction; §5.1–5.6 W-values for gases, summary tables and recommended values; §6.1–6.2 solids and liquids). §2 (experimental methods) and §4 (gas mixtures/Jesse effect) were not read in detail. No contradictions with existing wiki content — this is a foundational physical-constants report with no prior wiki coverage. Cross-linked to [[protocol_ICRU-50-photon-beam-therapy]] and [[equipment_radiation-detectors]].

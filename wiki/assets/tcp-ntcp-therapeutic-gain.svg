@@ -1,0 +1,47 @@
+<svg viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tcpntcp-title tcpntcp-desc">
+  <title id="tcpntcp-title">TCP, NTCP and Therapeutic Gain vs. Dose</title>
+  <desc id="tcpntcp-desc">Illustrative sigmoid dose-response curves for tumour control probability and normal tissue complication probability, and the resulting therapeutic gain P+ curve, peaking where TCP is high and NTCP is still low.</desc>
+  <rect x="0" y="0" width="640" height="420" fill="#ffffff"/>
+
+  <!-- Axes -->
+  <line x1="60" y1="350" x2="600" y2="350" stroke="#334155" stroke-width="1.5"/>
+  <line x1="60" y1="40" x2="60" y2="350" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- Gridlines -->
+  <g stroke="#e2e8f0" stroke-width="1">
+    <line x1="60" y1="290" x2="600" y2="290"/>
+    <line x1="60" y1="230" x2="600" y2="230"/>
+    <line x1="60" y1="170" x2="600" y2="170"/>
+    <line x1="60" y1="110" x2="600" y2="110"/>
+  </g>
+
+  <!-- Axis labels -->
+  <text x="330" y="395" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#334155">Dose to reference target (Gy)</text>
+  <text x="20" y="200" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#334155" transform="rotate(-90 20 200)">Probability</text>
+  <text x="60" y="368" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">0</text>
+  <text x="600" y="368" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">100</text>
+  <text x="45" y="354" text-anchor="end" font-family="sans-serif" font-size="11" fill="#64748b">0</text>
+  <text x="45" y="44" text-anchor="end" font-family="sans-serif" font-size="11" fill="#64748b">1.0</text>
+
+  <!-- Curves -->
+  <polyline fill="none" stroke="#2563eb" stroke-width="2.5" points="60.0,349.8 70.8,349.8 81.6,349.7 92.4,349.6 103.2,349.4 114.0,349.3 124.8,349.0 135.6,348.7 146.4,348.3 157.2,347.7 168.0,346.9 178.8,345.9 189.6,344.6 200.4,342.9 211.2,340.6 222.0,337.6 232.8,333.7 243.6,328.7 254.4,322.3 265.2,314.2 276.0,304.2 286.8,292.0 297.6,277.5 308.4,260.6 319.2,241.7 330.0,221.3 340.8,200.0 351.6,178.7 362.4,158.3 373.2,139.4 384.0,122.5 394.8,108.0 405.6,95.8 416.4,85.8 427.2,77.7 438.0,71.3 448.8,66.3 459.6,62.4 470.4,59.4 481.2,57.1 492.0,55.4 502.8,54.1 513.6,53.1 524.4,52.3 535.2,51.7 546.0,51.3 556.8,51.0 567.6,50.7 578.4,50.6 589.2,50.4 600.0,50.3"/>
+
+  <polyline fill="none" stroke="#dc2626" stroke-width="2.5" points="60.0,349.9 70.8,349.9 81.6,349.9 92.4,349.9 103.2,349.8 114.0,349.8 124.8,349.8 135.6,349.7 146.4,349.6 157.2,349.5 168.0,349.4 178.8,349.3 189.6,349.1 200.4,348.8 211.2,348.6 222.0,348.2 232.8,347.8 243.6,347.2 254.4,346.5 265.2,345.7 276.0,344.6 286.8,343.3 297.6,341.7 308.4,339.7 319.2,337.2 330.0,334.2 340.8,330.5 351.6,326.0 362.4,320.7 373.2,314.2 384.0,306.6 394.8,297.7 405.6,287.4 416.4,275.7 427.2,262.6 438.0,248.2 448.8,232.8 459.6,216.6 470.4,200.0 481.2,183.4 492.0,167.2 502.8,151.8 513.6,137.4 524.4,124.3 535.2,112.6 546.0,102.3 556.8,93.4 567.6,85.8 578.4,79.3 589.2,74.0 600.0,69.5"/>
+
+  <polyline fill="none" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="6,3" points="60.0,349.8 70.8,349.8 81.6,349.7 92.4,349.6 103.2,349.4 114.0,349.3 124.8,349.0 135.6,348.7 146.4,348.3 157.2,347.7 168.0,346.9 178.8,345.9 189.6,344.6 200.4,342.9 211.2,340.6 222.0,337.7 232.8,333.8 243.6,328.9 254.4,322.6 265.2,314.8 276.0,305.0 286.8,293.3 297.6,279.5 308.4,263.7 319.2,246.3 330.0,228.1 340.8,209.7 351.6,192.4 362.4,177.0 373.2,164.5 384.0,155.4 394.8,150.2 405.6,148.8 416.4,151.2 427.2,157.0 438.0,165.8 448.8,177.1 459.6,190.3 470.4,204.7 481.2,219.8 492.0,234.9 502.8,249.6 513.6,263.5 524.4,276.3 535.2,287.8 546.0,297.9 556.8,306.8 567.6,314.3 578.4,320.7 589.2,326.1 600.0,330.5"/>
+
+  <!-- Peak marker for P+ -->
+  <line x1="405.6" y1="148.8" x2="405.6" y2="350" stroke="#16a34a" stroke-width="1" stroke-dasharray="2,2"/>
+  <circle cx="405.6" cy="148.8" r="4" fill="#16a34a"/>
+  <text x="405.6" y="138" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#16a34a">optimal dose region</text>
+
+  <!-- Legend -->
+  <g font-family="sans-serif" font-size="12" fill="#334155">
+    <line x1="380" y1="60" x2="410" y2="60" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="416" y="64">TCP (tumour control)</text>
+    <line x1="380" y1="80" x2="410" y2="80" stroke="#dc2626" stroke-width="2.5"/>
+    <text x="416" y="84">NTCP (normal tissue complication)</text>
+    <line x1="380" y1="100" x2="410" y2="100" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="6,3"/>
+    <text x="416" y="104">P+ = TCP x (1-NTCP), therapeutic gain</text>
+  </g>
+</svg>
