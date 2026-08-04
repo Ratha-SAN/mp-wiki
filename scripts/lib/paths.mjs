@@ -58,3 +58,20 @@ export function slugifyHeading(text) {
 export function isExternalTarget(target) {
   return /^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//');
 }
+
+/**
+ * Fallback display title for a note with no frontmatter `title`: strip a
+ * lowercase "type_" prefix (e.g. "protocol_ICRU-50-photon-beam-therapy") and
+ * turn the rest into words. A word that already carries a capital (an
+ * acronym like "ICRU" or "HyTEC") or has no letters at all (a number) is
+ * left untouched; only plain lowercase words get title-cased.
+ */
+export function prettifyTitle(id) {
+  const base = baseOf(id);
+  const stripped = base.replace(/^[a-z]+_/, '') || base;
+  const words = stripped.split(/[-_\s]+/).filter(Boolean);
+  if (!words.length) return base;
+  return words
+    .map((w) => (/[A-Z]/.test(w) || !/[a-z]/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(' ');
+}

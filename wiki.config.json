@@ -1,5 +1,5 @@
 {
-  "vaultPath": "sample-vault",
+  "vaultPath": "wiki",
   "outDir": "public/wiki-data",
   "siteTitle": "medphys-wiki",
   "homeNote": "Index",
