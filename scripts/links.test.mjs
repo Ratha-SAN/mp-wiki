@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createMarkdown, scanTokens } from './lib/markdown.mjs';
+import { prettifyTitle } from './lib/paths.mjs';
 import { VaultIndex, parseMarkdownTarget, parseWikiTarget } from './lib/resolve.mjs';
 
 const FILES = [
@@ -188,6 +189,21 @@ test('inline math renders and does not swallow currency', () => {
   const html = md.render('Dose $D = E/m$ costs $20 to $30.', {});
   assert.match(html, /class="katex"/);
   assert.match(html, /costs \$20 to \$30/);
+});
+
+/* --------------------------------------------------------------- titles -- */
+
+test('prettifyTitle strips a lowercase type prefix and keeps acronyms/numbers as-is', () => {
+  assert.equal(prettifyTitle('protocol_ICRU-50-photon-beam-therapy'), 'ICRU 50 Photon Beam Therapy');
+  assert.equal(prettifyTitle('technique_SIB-IMRT'), 'SIB IMRT');
+  assert.equal(prettifyTitle('concept_RBE'), 'RBE');
+  assert.equal(prettifyTitle('concept_age-and-sex-radiosensitivity'), 'Age And Sex Radiosensitivity');
+  assert.equal(prettifyTitle('index'), 'Index');
+  assert.equal(prettifyTitle('protocol_HyTEC-dose-constraints'), 'HyTEC Dose Constraints');
+});
+
+test('prettifyTitle handles a nested note id (path-like, already spaced)', () => {
+  assert.equal(prettifyTitle('Dosimetry/Absorbed Dose'), 'Absorbed Dose');
 });
 
 test('display math renders as a block', () => {
