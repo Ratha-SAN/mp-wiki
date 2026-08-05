@@ -71,6 +71,7 @@ async function main() {
       frontmatter: data,
       body: parsed.content,
       tags: frontmatterTags(data),
+      noteType: typeof data.type === 'string' && data.type.trim() ? data.type.trim() : null,
     });
   }
 
@@ -95,6 +96,7 @@ async function main() {
       folder: note.folder,
       kind: 'note',
       tags: [...note.tags],
+      noteType: note.noteType,
     });
   }
 
@@ -160,6 +162,7 @@ async function main() {
             folder: null,
             kind: 'unresolved',
             tags: [],
+            noteType: null,
           });
         }
       }
@@ -216,6 +219,7 @@ async function main() {
       folder: n.folder,
       kind: n.kind,
       tags: n.tags,
+      noteType: n.noteType,
       deg: (adjacency.get(n.id).out.length + adjacency.get(n.id).in.length) || 0,
     })),
     edges: edgeList,

@@ -41,7 +41,7 @@ interface Theme {
   other: string;
 }
 
-type ColorMode = 'role' | 'folder';
+type ColorMode = 'role' | 'folder' | 'type';
 
 const MIN_ZOOM = 0.12;
 const MAX_ZOOM = 6;
@@ -92,8 +92,9 @@ export class GraphView {
   private showUnresolved = true;
   private hops = 0; // 0 = whole vault
   private colorMode: ColorMode = readColorMode();
-  /** folder path -> categorical slot, fixed for the whole session (never re-ranked). */
+  /** folder path / note type -> categorical slot, fixed for the whole session (never re-ranked). */
   private readonly folderSlot: Map<string, number>;
+  private readonly typeSlot: Map<string, number>;
   private readonly legend = document.createElement('ul');
 
   constructor(opts: GraphOptions) {
@@ -102,6 +103,7 @@ export class GraphView {
     this.byId = new Map(this.nodes.map((node) => [node.ref.id, node]));
     this.neighbours = buildAdjacency(opts.data);
     this.folderSlot = assignFolderSlots(opts.data);
+    this.typeSlot = assignTypeSlots(opts.data);
 
     this.canvas.className = 'graph-canvas';
     this.canvas.setAttribute('role', 'application');
@@ -228,9 +230,10 @@ export class GraphView {
     colourWrap.className = 'graph-field';
     colourWrap.innerHTML = '<span>Colour</span>';
     const colour = document.createElement('select');
-    colour.innerHTML = '<option value="role">Role</option><option value="folder">Folder</option>';
+    colour.innerHTML =
+      '<option value="role">Role</option><option value="folder">Folder</option><option value="type">Type</option>';
     colour.value = this.colorMode;
-    colour.title = 'Colour nodes by their role in the graph, or by the folder they live in';
+    colour.title = 'Colour nodes by role, by the folder they live in, or by their frontmatter type';
     colour.addEventListener('change', () => {
       this.colorMode = colour.value as ColorMode;
       writeColorMode(this.colorMode);
@@ -282,11 +285,15 @@ export class GraphView {
       return;
     }
 
-    const slots = [...this.folderSlot.entries()].sort((a, b) => a[1] - b[1]);
-    const rows = slots.map(([folder, slot]) =>
-      entry(`background:${this.theme.series[slot]}`, folder || '(root)'),
+    const isType = this.colorMode === 'type';
+    const slotMap = isType ? this.typeSlot : this.folderSlot;
+    const slots = [...slotMap.entries()].sort((a, b) => a[1] - b[1]);
+    const rows = slots.map(([key, slot]) =>
+      entry(`background:${this.theme.series[slot]}`, isType ? key : key || '(root)'),
     );
-    if (this.hasOtherFolders()) rows.push(entry(`background:${this.theme.other}`, 'Other folders'));
+    if (this.hasOther(slotMap)) {
+      rows.push(entry(`background:${this.theme.other}`, isType ? 'No type' : 'Other folders'));
+    }
     rows.push(entry(ring, 'Open note'));
     rows.push(
       entry(`background:${this.theme.surface};border:1.5px dashed ${this.theme.unresolved}`, 'Unresolved link'),
@@ -294,17 +301,18 @@ export class GraphView {
     this.legend.innerHTML = rows.join('');
   }
 
-  private hasOtherFolders(): boolean {
-    return this.opts.data.nodes.some(
-      (node) => node.kind === 'note' && !this.folderSlot.has(node.folder ?? ''),
-    );
+  private hasOther(slotMap: Map<string, number>): boolean {
+    const key = this.colorMode === 'type' ? (n: GraphNode) => n.noteType ?? '' : (n: GraphNode) => n.folder ?? '';
+    return this.opts.data.nodes.some((node) => node.kind === 'note' && !slotMap.has(key(node)));
   }
 
   private fillFor(node: GraphNode): string {
     if (this.colorMode === 'role') {
       return node.id === this.activeId ? this.theme.active : this.theme.node;
     }
-    const slot = this.folderSlot.get(node.folder ?? '');
+    const slotMap = this.colorMode === 'type' ? this.typeSlot : this.folderSlot;
+    const key = this.colorMode === 'type' ? node.noteType ?? '' : node.folder ?? '';
+    const slot = slotMap.get(key);
     return slot === undefined ? this.theme.other : this.theme.series[slot];
   }
 
@@ -497,7 +505,7 @@ export class GraphView {
       } else {
         ctx.fillStyle = inSet ? this.fillFor(node.ref) : theme.nodeMuted;
         ctx.fill();
-        if (this.colorMode === 'folder') {
+        if (this.colorMode === 'folder' || this.colorMode === 'type') {
           // Some categorical hues sit under 3:1 against a light surface; a hairline
           // keeps every node's shape readable regardless of its fill.
           ctx.lineWidth = 1 / t.k;
@@ -785,6 +793,25 @@ function assignFolderSlots(data: GraphData): Map<string, number> {
   );
 }
 
+/**
+ * Same idea as `assignFolderSlots`, keyed by frontmatter `type:` instead. Notes with
+ * no type are left out of the map entirely, so they fall to fillFor()'s "Other" —
+ * an absent value isn't a category the vault author chose, and shouldn't get one.
+ */
+function assignTypeSlots(data: GraphData): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const node of data.nodes) {
+    if (node.kind !== 'note' || !node.noteType) continue;
+    counts.set(node.noteType, (counts.get(node.noteType) ?? 0) + 1);
+  }
+  return new Map(
+    [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, SERIES_SLOTS)
+      .map(([type], index) => [type, index]),
+  );
+}
+
 function matchesFolder(folder: string, selected: Set<string>): boolean {
   if (selected.has(folder)) return true;
   for (const candidate of selected) {
@@ -905,7 +932,8 @@ function escapeHtml(value: string): string {
 }
 
 function readColorMode(): ColorMode {
-  return localStorage.getItem(COLOR_KEY) === 'folder' ? 'folder' : 'role';
+  const stored = localStorage.getItem(COLOR_KEY);
+  return stored === 'folder' || stored === 'type' ? stored : 'role';
 }
 
 function writeColorMode(mode: ColorMode): void {

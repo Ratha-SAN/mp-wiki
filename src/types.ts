@@ -10,6 +10,8 @@ export interface GraphNode {
   folder: string | null;
   kind: NodeKind;
   tags: string[];
+  /** Frontmatter `type:` (e.g. "concept", "protocol") — null when absent. */
+  noteType: string | null;
   deg: number;
 }
 
