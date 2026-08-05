@@ -6,14 +6,19 @@
   --surface-2: #eeeeeb;
   --border: #dedcd6;
   --border-strong: #c6c4bd;
+  --ink: #191918;
 
   --text-1: #191918;
   --text-2: #52514e;
   --text-3: #85837c;
 
-  --accent: #2a78d6;
-  --accent-soft: #e6f0fc;
+  --accent: #4a3aa7;
+  --accent-soft: #ece8fb;
   --warn: #eb6834;
+
+  /* Decorative stage behind the app card — desktop only, purely cosmetic. */
+  --page-bg: linear-gradient(150deg, #f2eeff 0%, #fdf6ec 45%, #eafaf1 100%);
+  --blob-opacity: 0.4;
 
   --graph-surface: #fcfcfb;
   --graph-node: #2a78d6;
@@ -38,7 +43,8 @@
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --radius: 7px;
+  --radius: 10px;
+  --radius-lg: 20px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,14 +56,18 @@
     --surface-2: #242422;
     --border: #33332f;
     --border-strong: #4a4a45;
+    --ink: #f2f1ec;
 
     --text-1: #f2f1ec;
     --text-2: #c3c2b7;
     --text-3: #8d8c83;
 
-    --accent: #3987e5;
-    --accent-soft: #1e2c3d;
+    --accent: #9085e9;
+    --accent-soft: #262047;
     --warn: #d95926;
+
+    --page-bg: linear-gradient(150deg, #17141f 0%, #191512 45%, #0f1712 100%);
+    --blob-opacity: 0.22;
 
     --graph-surface: #1a1a19;
     --graph-node: #3987e5;
@@ -89,14 +99,18 @@
   --surface-2: #242422;
   --border: #33332f;
   --border-strong: #4a4a45;
+  --ink: #f2f1ec;
 
   --text-1: #f2f1ec;
   --text-2: #c3c2b7;
   --text-3: #8d8c83;
 
-  --accent: #3987e5;
-  --accent-soft: #1e2c3d;
+  --accent: #9085e9;
+  --accent-soft: #262047;
   --warn: #d95926;
+
+  --page-bg: linear-gradient(150deg, #17141f 0%, #191512 45%, #0f1712 100%);
+  --blob-opacity: 0.22;
 
   --graph-surface: #1a1a19;
   --graph-node: #3987e5;
@@ -130,12 +144,16 @@ body {
 }
 
 body {
+  height: 100vh;
   font-family: var(--sans);
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-1);
-  background: var(--surface-0);
+  background: var(--page-bg);
   -webkit-font-smoothing: antialiased;
+  display: flex;
+  box-sizing: border-box;
+  padding: 18px;
 }
 
 button,
@@ -145,10 +163,66 @@ select {
   color: inherit;
 }
 
+/* The app ships as a bordered "card" floating on a soft decorative stage —
+   pure presentation, the layout underneath is unchanged. Mobile drops the
+   framing entirely (see the small-width block) since screen space matters
+   more there than the effect. */
 #app {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  height: 100%;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px -20px rgb(0 0 0 / 28%);
+  overflow: hidden;
+}
+
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-blob {
+  position: absolute;
+  width: 42vmax;
+  height: 42vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: var(--blob-opacity);
+}
+
+.bg-blob-1 {
+  top: -14vmax;
+  left: -12vmax;
+  background: var(--series-7);
+}
+
+.bg-blob-2 {
+  top: -18vmax;
+  right: -14vmax;
+  background: var(--series-4);
+  width: 34vmax;
+  height: 34vmax;
+}
+
+.bg-blob-3 {
+  bottom: -18vmax;
+  left: -10vmax;
+  background: var(--series-8);
+  width: 30vmax;
+  height: 30vmax;
+}
+
+.bg-blob-4 {
+  bottom: -16vmax;
+  right: -12vmax;
+  background: var(--series-3);
 }
 
 /* ------------------------------------------------------------------ topbar */
@@ -156,17 +230,28 @@ select {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
-  height: 46px;
+  gap: 10px;
+  padding: 0 14px;
+  height: 48px;
   background: var(--surface-1);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--ink);
+}
+
+.logo-badge {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 7px;
+  border: 1.5px solid var(--ink);
+  background:
+    radial-gradient(circle at 32% 30%, var(--accent) 0 34%, transparent 35%),
+    radial-gradient(circle at 68% 70%, var(--warn) 0 34%, transparent 35%);
 }
 
 .site-title {
   margin: 0;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
 }
 
@@ -182,14 +267,15 @@ select {
   place-items: center;
   width: 30px;
   height: 30px;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
+  border: 1.5px solid transparent;
+  border-radius: 999px;
   background: none;
   color: var(--text-2);
   cursor: pointer;
 }
 
 .icon-button:hover {
+  border-color: var(--ink);
   background: var(--surface-2);
   color: var(--text-1);
 }
@@ -277,10 +363,14 @@ select {
 
 .search input {
   width: 100%;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: 7px 12px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
   background: var(--surface-0);
+}
+
+.search input:hover {
+  border-color: var(--ink);
 }
 
 .search input:focus-visible {
@@ -304,9 +394,9 @@ select {
   align-items: center;
   gap: 6px;
   width: 100%;
-  padding: 3px 6px 3px calc(6px + var(--depth) * 13px);
+  padding: 4px 10px 4px calc(10px + var(--depth) * 13px);
   border: 0;
-  border-radius: 5px;
+  border-radius: 999px;
   background: none;
   text-align: left;
   cursor: pointer;
@@ -320,8 +410,8 @@ select {
 
 .tree-row.is-active {
   background: var(--accent-soft);
-  color: var(--text-1);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .tree-label {
@@ -373,9 +463,9 @@ select {
 .result-row {
   display: block;
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius);
   background: none;
   text-align: left;
   cursor: pointer;
@@ -455,8 +545,8 @@ mark {
 }
 
 .note-tags li {
-  padding: 1px 7px;
-  border: 1px solid var(--border);
+  padding: 2px 9px;
+  border: 1.5px solid var(--border-strong);
   border-radius: 999px;
   font-size: 11.5px;
   color: var(--text-2);
@@ -724,7 +814,7 @@ mark {
 .pane-graph {
   position: relative;
   background: var(--graph-surface);
-  border-left: 1px solid var(--border);
+  border-left: 2px solid var(--ink);
 }
 
 .graph-canvas {
@@ -749,9 +839,9 @@ mark {
 
 .graph-button,
 .graph-field select {
-  padding: 3px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: 4px 11px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
   background: var(--surface-1);
   color: var(--text-2);
   font-size: 12px;
@@ -759,13 +849,16 @@ mark {
 }
 
 .graph-button:hover {
-  border-color: var(--border-strong);
+  border-color: var(--ink);
   color: var(--text-1);
 }
 
 .graph-button.is-on {
   border-color: var(--accent);
-  color: var(--accent);
+  background: var(--accent);
+  /* surface-1 is near-white in light mode, near-black in dark mode — since accent
+     itself flips dark/light the same way, this keeps text contrast solid in both. */
+  color: var(--surface-1);
 }
 
 .graph-field {
@@ -780,9 +873,9 @@ mark {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: 4px 11px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
   background: var(--surface-1);
   font-size: 12px;
   color: var(--text-2);
@@ -812,7 +905,7 @@ mark {
   max-height: 46vh;
   overflow: auto;
   padding: 6px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--ink);
   border-radius: var(--radius);
   background: var(--surface-1);
   box-shadow: 0 8px 24px rgb(0 0 0 / 16%);
@@ -895,6 +988,23 @@ mark {
 /* ------------------------------------------------------------- small width */
 
 @media (max-width: 900px) {
+  /* Drop the floating-card stage: on a small screen every pixel of height and
+     width goes to content, not to a decorative frame around it. */
+  body {
+    padding: 0;
+    background: var(--surface-0);
+  }
+
+  .bg-decor {
+    display: none;
+  }
+
+  #app {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   .panes {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -935,7 +1045,7 @@ mark {
   .tabbar {
     display: grid;
     grid-auto-flow: column;
-    border-top: 1px solid var(--border);
+    border-top: 2px solid var(--ink);
     background: var(--surface-1);
   }
 
@@ -944,12 +1054,13 @@ mark {
     border: 0;
     background: none;
     color: var(--text-3);
+    font-weight: 600;
     cursor: pointer;
   }
 
   .tabbar button.is-active {
     color: var(--accent);
-    box-shadow: inset 0 -2px 0 var(--accent);
+    box-shadow: inset 0 -2.5px 0 var(--accent);
   }
 
   .note {

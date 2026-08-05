@@ -933,7 +933,7 @@ function escapeHtml(value: string): string {
 
 function readColorMode(): ColorMode {
   const stored = localStorage.getItem(COLOR_KEY);
-  return stored === 'folder' || stored === 'type' ? stored : 'role';
+  return stored === 'folder' || stored === 'type' || stored === 'role' ? stored : 'type';
 }
 
 function writeColorMode(mode: ColorMode): void {
