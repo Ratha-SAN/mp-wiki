@@ -65,6 +65,10 @@ export class GraphView {
   private visibleSet = new Set<number>();
 
   private transform = { k: 1, x: 0, y: 0 };
+  /** Where the wheel handler wants to be; `transform` eases toward this every frame. */
+  private targetTransform = { k: 1, x: 0, y: 0 };
+  private chaseFrame = 0;
+  private fitToken = 0;
   private theme!: Theme;
   private width = 0;
   private height = 0;
@@ -72,6 +76,11 @@ export class GraphView {
 
   private activeId: string | null = null;
   private hovered: SimNode | null = null;
+  /** Stays set to the last hovered node while `hoverMix` eases back to 0, so the
+   *  neighbour highlight fades out instead of vanishing the instant the pointer leaves. */
+  private highlightNode: SimNode | null = null;
+  private hoverMix = 0;
+  private hoverFrame = 0;
   private dragging: SimNode | null = null;
   private panning: { x: number; y: number } | null = null;
   private moved = false;
@@ -149,21 +158,26 @@ export class GraphView {
       x: this.width / 2 - ((minX + maxX) / 2) * k,
       y: this.height / 2 - ((minY + maxY) / 2) * k,
     };
+    this.chaseFrame = 0; // a fit overrides any in-flight wheel-zoom chase
     if (!animate) {
       this.transform = target;
+      this.targetTransform = target;
       this.draw();
       return;
     }
     const from = { ...this.transform };
     const start = performance.now();
+    const token = ++this.fitToken;
     const step = (now: number) => {
-      const t = Math.min(1, (now - start) / 260);
+      if (token !== this.fitToken) return; // superseded by a newer fit()
+      const t = Math.min(1, (now - start) / 320);
       const e = t * (2 - t);
       this.transform = {
         k: from.k + (target.k - from.k) * e,
         x: from.x + (target.x - from.x) * e,
         y: from.y + (target.y - from.y) * e,
       };
+      this.targetTransform = this.transform;
       this.draw();
       if (t < 1) requestAnimationFrame(step);
     };
@@ -341,6 +355,7 @@ export class GraphView {
     this.countEl.textContent = `${this.visible.length} notes · ${this.links.length} links`;
 
     this.simulation?.stop();
+    let settleTicks = 0;
     this.simulation = forceSimulation(this.visible)
       .force(
         'link',
@@ -352,12 +367,25 @@ export class GraphView {
       .force('collide', forceCollide<SimNode>((node) => radiusOf(node.ref) + 6))
       .force('x', forceX(this.width / 2).strength(0.035))
       .force('y', forceY(this.height / 2).strength(0.035))
-      .alpha(initial ? 1 : 0.55)
-      .alphaDecay(0.028)
-      .on('tick', () => this.draw());
+      .alpha(initial ? 1 : 0.7)
+      .alphaDecay(0.024)
+      .velocityDecay(0.34)
+      .on('tick', () => {
+        this.draw();
+        // Re-target the camera every few ticks while the layout is still moving, so
+        // it visibly tracks the graph unfolding instead of sitting on a stale frame
+        // (fit()'s own tween just gets superseded smoothly — see the token guard).
+        if (!this.userFramed && ++settleTicks % 8 === 0) this.fit(true);
+      })
+      .on('end', () => {
+        if (!this.userFramed) this.fit(true);
+      });
 
-    // Warm the layout off-screen so the view never opens on a hairball, then frame it.
-    this.simulation.tick(initial ? 140 : 70);
+    // A light warm-up avoids opening on total chaos, but stays short enough that
+    // most of the settle happens on-screen via the tick loop above — that visible
+    // drift-into-place, camera included, is what makes the layout read as fluid
+    // instead of snapping straight to its final position.
+    this.simulation.tick(initial ? 20 : 8);
     this.fit(!initial);
     this.userFramed = false;
   }
@@ -429,7 +457,7 @@ export class GraphView {
     ctx.clearRect(0, 0, this.width, this.height);
 
     const highlight = this.highlightSet();
-    const dim = highlight !== null;
+    const mix = highlight ? this.hoverMix : 0; // 0 = no dim, 1 = fully dimmed non-neighbours
 
     ctx.translate(t.x, t.y);
     ctx.scale(t.k, t.k);
@@ -437,10 +465,9 @@ export class GraphView {
     // Edges
     ctx.lineWidth = 1 / t.k;
     for (const link of this.links) {
-      const lit =
-        !dim || (highlight!.has(link.source.ref.i) && highlight!.has(link.target.ref.i));
-      ctx.strokeStyle = lit ? (dim ? theme.edgeStrong : theme.edge) : theme.edge;
-      ctx.globalAlpha = lit ? 0.9 : 0.12;
+      const inSet = !highlight || (highlight.has(link.source.ref.i) && highlight.has(link.target.ref.i));
+      ctx.strokeStyle = inSet && mix > 0.5 ? theme.edgeStrong : theme.edge;
+      ctx.globalAlpha = inSet ? 0.9 : lerp(0.9, 0.12, mix);
       ctx.setLineDash(link.type === 'embed' ? [3 / t.k, 3 / t.k] : []);
       ctx.beginPath();
       ctx.moveTo(link.source.x ?? 0, link.source.y ?? 0);
@@ -452,10 +479,10 @@ export class GraphView {
 
     // Nodes
     for (const node of this.visible) {
-      const lit = !dim || highlight!.has(node.ref.i);
+      const inSet = !highlight || highlight.has(node.ref.i);
       const isActive = node.ref.id === this.activeId;
       const radius = radiusOf(node.ref);
-      ctx.globalAlpha = lit ? 1 : 0.22;
+      ctx.globalAlpha = inSet ? 1 : lerp(1, 0.22, mix);
       ctx.beginPath();
       ctx.arc(node.x ?? 0, node.y ?? 0, radius, 0, Math.PI * 2);
 
@@ -468,16 +495,16 @@ export class GraphView {
         ctx.stroke();
         ctx.setLineDash([]);
       } else {
-        ctx.fillStyle = lit ? this.fillFor(node.ref) : theme.nodeMuted;
+        ctx.fillStyle = inSet ? this.fillFor(node.ref) : theme.nodeMuted;
         ctx.fill();
         if (this.colorMode === 'folder') {
           // Some categorical hues sit under 3:1 against a light surface; a hairline
           // keeps every node's shape readable regardless of its fill.
           ctx.lineWidth = 1 / t.k;
           ctx.strokeStyle = theme.edgeStrong;
-          ctx.globalAlpha = lit ? 0.55 : 0.16;
+          ctx.globalAlpha = inSet ? 0.55 : lerp(0.55, 0.16, mix);
           ctx.stroke();
-          ctx.globalAlpha = lit ? 1 : 0.22;
+          ctx.globalAlpha = inSet ? 1 : lerp(1, 0.22, mix);
         }
         if (isActive || node === this.hovered) {
           ctx.lineWidth = 2.5 / t.k;
@@ -492,10 +519,10 @@ export class GraphView {
     ctx.globalAlpha = 1;
     ctx.restore();
 
-    this.paintLabels(highlight);
+    this.paintLabels(highlight, mix);
   }
 
-  private paintLabels(highlight: Set<number> | null): void {
+  private paintLabels(highlight: Set<number> | null, mix: number): void {
     const { ctx, theme, transform: t } = this;
     const showAll = t.k >= 0.95;
     ctx.save();
@@ -508,7 +535,9 @@ export class GraphView {
       const emphasised = node === this.hovered || node.ref.id === this.activeId;
       const near = highlight?.has(node.ref.i) ?? false;
       if (!showAll && !emphasised && !near) continue;
-      if (highlight && !near && !emphasised) continue;
+      // Wait until the dim is more than half faded in before hiding unrelated labels,
+      // so they don't pop off before the neighbour highlight has visually registered.
+      if (highlight && mix > 0.5 && !near && !emphasised) continue;
 
       const x = (node.x ?? 0) * t.k + t.x;
       const y = (node.y ?? 0) * t.k + t.y + radiusOf(node.ref) * t.k + 4;
@@ -525,13 +554,59 @@ export class GraphView {
     ctx.restore();
   }
 
+  /** Keyed off `highlightNode`, not `hovered` — it must outlive the pointer leaving
+   *  the node so the dim effect has something to fade out from. */
   private highlightSet(): Set<number> | null {
-    if (!this.hovered) return null;
-    const set = new Set<number>([this.hovered.ref.i]);
-    for (const neighbour of this.neighbours.get(this.hovered.ref.i) ?? []) {
+    if (!this.highlightNode) return null;
+    const set = new Set<number>([this.highlightNode.ref.i]);
+    for (const neighbour of this.neighbours.get(this.highlightNode.ref.i) ?? []) {
       if (this.visibleSet.has(neighbour)) set.add(neighbour);
     }
     return set;
+  }
+
+  /** Eases `hoverMix` toward 1 (hovering something) or 0 (not), redrawing each step. */
+  private startHoverEase(): void {
+    if (this.hoverFrame) return;
+    const step = () => {
+      const target = this.hovered ? 1 : 0;
+      this.hoverMix += (target - this.hoverMix) * 0.28;
+      if (Math.abs(target - this.hoverMix) < 0.01) {
+        this.hoverMix = target;
+        this.hoverFrame = 0;
+        if (target === 0) this.highlightNode = null;
+        this.draw();
+        return;
+      }
+      this.draw();
+      this.hoverFrame = requestAnimationFrame(step);
+    };
+    this.hoverFrame = requestAnimationFrame(step);
+  }
+
+  /** Eases `transform` toward `targetTransform` every frame — the wheel handler only
+   *  ever moves the target, so a burst of scroll events reads as one continuous glide. */
+  private startZoomChase(): void {
+    if (this.chaseFrame) return;
+    const step = () => {
+      const dk = this.targetTransform.k - this.transform.k;
+      const dx = this.targetTransform.x - this.transform.x;
+      const dy = this.targetTransform.y - this.transform.y;
+      if (Math.abs(dk) < 0.0004 && Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) {
+        this.transform = { ...this.targetTransform };
+        this.chaseFrame = 0;
+        this.draw();
+        return;
+      }
+      this.transform = {
+        k: this.transform.k + dk * 0.35,
+        x: this.transform.x + dx * 0.35,
+        y: this.transform.y + dy * 0.35,
+      };
+      this.draw();
+      this.chaseFrame = requestAnimationFrame(step);
+    };
+    this.chaseFrame = requestAnimationFrame(step);
   }
 
   /* --------------------------------------------------------------- pointer */
@@ -545,6 +620,7 @@ export class GraphView {
       const hit = this.nodeAt(event);
       if (hit) {
         this.dragging = hit;
+        this.userFramed = true; // a manually placed node should not get re-centred away
         hit.fx = hit.x;
         hit.fy = hit.y;
         this.simulation?.alphaTarget(0.25).restart();
@@ -567,12 +643,15 @@ export class GraphView {
         this.userFramed = true;
         this.transform.x = event.clientX - this.panning.x;
         this.transform.y = event.clientY - this.panning.y;
+        this.targetTransform = this.transform;
         this.draw();
         return;
       }
       const hit = this.nodeAt(event);
       if (hit !== this.hovered) {
         this.hovered = hit;
+        if (hit) this.highlightNode = hit;
+        this.startHoverEase();
         canvas.style.cursor = hit ? 'pointer' : 'grab';
         canvas.title = hit ? `${hit.ref.title}${hit.ref.path ? `\n${hit.ref.path}` : '\nunresolved link'}` : '';
         this.draw();
@@ -598,7 +677,7 @@ export class GraphView {
     canvas.addEventListener('pointerleave', () => {
       if (this.hovered) {
         this.hovered = null;
-        this.draw();
+        this.startHoverEase();
       }
     });
 
@@ -607,18 +686,22 @@ export class GraphView {
       (event) => {
         event.preventDefault();
         this.userFramed = true;
+        this.fitToken += 1; // a manual zoom cancels any fit() tween in flight
         const rect = canvas.getBoundingClientRect();
         const px = event.clientX - rect.left;
         const py = event.clientY - rect.top;
         const factor = Math.exp(-event.deltaY * (event.deltaMode === 1 ? 0.02 : 0.0016));
-        const k = clamp(this.transform.k * factor, MIN_ZOOM, MAX_ZOOM);
-        const scale = k / this.transform.k;
-        this.transform = {
+        // Compound off the current target (not the still-catching-up transform) so a
+        // fast burst of wheel ticks accumulates smoothly instead of fighting the chase.
+        const base = this.targetTransform;
+        const k = clamp(base.k * factor, MIN_ZOOM, MAX_ZOOM);
+        const scale = k / base.k;
+        this.targetTransform = {
           k,
-          x: px - (px - this.transform.x) * scale,
-          y: py - (py - this.transform.y) * scale,
+          x: px - (px - base.x) * scale,
+          y: py - (py - base.y) * scale,
         };
-        this.draw();
+        this.startZoomChase();
       },
       { passive: false },
     );
@@ -811,6 +894,10 @@ function truncate(value: string, max: number): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function lerp(from: number, to: number, t: number): number {
+  return from + (to - from) * t;
 }
 
 function escapeHtml(value: string): string {
