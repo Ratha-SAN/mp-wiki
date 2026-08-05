@@ -257,3 +257,59 @@ Read each report — full text for shorter/foundational reports (ICRU 38, 50, 60
 **Depth caveat:** several of the larger reports (83, 87, 89, 91, 67, 74) were read substantially but not cover-to-cover — each page's History section records exactly which sections were and were not read, and appendices/worked clinical examples were generally not read in this pass. Two files in the newer reports' page ranges triggered transient `pdftoppm` read errors that resolved on retry; no content gaps resulted.
 
 Updated `index.md` (14 new entries under Protocols).
+
+## 2026-08-05 — Ingest: IAEA Guidelines on Professional Ethics for Medical Physicists (external `MP Library/` folder)
+
+User asked to "digest medical physic ethic." Found one matching file, `Guidelines on Professional Ethics for Medical Physicists.pdf` (IAEA Training Course Series No. 78, 2023). Read the full 36-page document. Presented key takeaways (background/rationale, layered value frameworks — biomedical ethics four principles, ICRP 138's core/procedural values, the seven medical-physics-specific guiding principles — workplace ethics, scientific integrity, ten worked clinical scenarios, and the education framework) and proposed a single new `standard_` page (mirroring `standard_ICRP-radiation-protection`, since the document doesn't fit `concept_`/`equipment_`/`protocol_`/`technique_`). User confirmed with "yes."
+
+Wrote one new page, `standard_IAEA-medical-physics-ethics.md`.
+
+**No contradictions found** with existing wiki content. Cross-linked to [[concept_ethics-and-risk-communication-in-radiation-protection]] and [[standard_ICRP-radiation-protection]] (shared ICRP 138 ethical-values foundation), [[technique_SBRT]] and [[protocol_HyTEC-dose-constraints]] (prudence/precaution principle re: adopting emerging hypofractionated evidence), and [[protocol_ICRU-83-IMRT]]/[[protocol_ICRU-91-stereotactic]] (commissioning-before-clinical-use imperative, illustrated in the document's linac-commissioning scenario).
+
+**Gap flagged (not a contradiction):** [[concept_ethics-and-risk-communication-in-radiation-protection]]'s existing summary of ICRP 138's procedural values lists only transparency and accountability; the new document lists a third, "inclusiveness," from the same ICRP 138 source. Not corrected in the existing page (Synthesis sections are never silently overwritten) — flagged in the new page's History for a future dedicated update to that page.
+
+Updated `index.md` (new entry under Standards).
+
+## 2026-08-05 — Ingest: TRS-277, TRS-398 Rev.1, and TG-51 reference-dosimetry protocols (external `MP Library/` folder)
+
+User asked to "digest Absorb dose in photon and electron." Found a cluster of five related reference-dosimetry documents in `MP Library/`: IAEA TRS-277 (1987, air-kerma-based, matching the query title exactly but superseded), TRS398.pdf and TRS 398 Rev1 2024.pdf (current absorbed-dose-to-water code of practice, original and 2024 revision), TRS-381 review.pdf (plane-parallel chamber supplement), and the Almond et al. 1999 AAPM TG-51 paper (parallel US protocol). Presented the cluster and asked the user to choose scope; user selected TRS-277 + TRS-398 Rev1 2024 + TG-51 (as a cross-reference subsection within the TRS-398 page, not a separate page) — skipping TRS-381 and the pre-revision TRS398.pdf.
+
+Read TRS-277 substantially (Foreword through Formalism §6.1) and TRS-398 Rev1 2024 substantially (Introduction through ND,w-based Formalism and start of Implementation), plus the full TG-51 paper (15 pages) for the cross-reference subsection. Wrote two new pages:
+
+- protocol_TRS-277-absorbed-dose-photon-electron
+- protocol_TRS-398-absorbed-dose-external-beam (includes a "Contrast with AAPM TG-51" subsection)
+
+**No contradictions found** with existing wiki content. Noted the W/e-value update between TRS-277 (33.97 J/C, itself an update from ICRU-31-era 33.85 eV) and confirmed TRS-398 retains the same 33.97 eV for electrons while adding new values for protons/carbon ions — a documented historical revision, not a contradiction, flagged inline in both new pages. Cross-linked to [[protocol_ICRU-31-W-value]], [[protocol_ICRU-60-quantities-and-units]], [[protocol_ICRU-44-tissue-substitutes]], [[equipment_radiation-detectors]], [[protocol_ICRU-83-IMRT]], [[protocol_ICRU-91-stereotactic]], [[protocol_HyTEC-dose-constraints]], and [[technique_SBRT]].
+
+**Depth caveat:** TRS-398 Rev1 2024 is a 285-page report covering photon/electron/proton/light-ion beams; only the general framework and formalism chapters were read in this pass, not the per-modality codes of practice (Sections 5–11) or appendices. TRS-277 was read to the end of its core Formalism section (§6.1); Sections 7–10 and the appendices/worksheets were not read.
+
+Updated `index.md` (2 new entries under Protocols).
+
+## 2026-08-05 — Lint: spot-check of `concept_fractionation` and `concept_normal-tissue-response` against source handbook
+
+User asked to "digest radiobiology handbook"; since IAEA Training Course Series 42 (the handbook) was already fully ingested at project founding, offered options via AskUserQuestion; user selected no preference, so defaulted to a targeted accuracy audit rather than re-ingesting. Re-read `raw/Radiation Biology- A Handbook for Teachers and Students.pdf` §3.11–3.14 (fractionation, normal tissue response, retreatment tolerance, combined-modality sections) and compared directly against the existing `concept_fractionation.md` and `concept_normal-tissue-response.md` pages.
+
+**Result: no errors found.** All spot-checked figures (α/β ranges, hyperfractionation/CHART parameters, organ-specific tolerance doses for lung/kidney/liver/CNS/heart) and citations matched the source exactly.
+
+**Two minor enrichment opportunities noted (not corrected — no factual error to fix):** (1) the source gives a more precise spinal-cord volume-effect threshold (myelopathy risk stable down to ~5 cm of a 20 cm cord length at 50–55 Gy) than `concept_normal-tissue-response.md`'s current qualitative phrasing; (2) the source's retreatment-tolerance section shows spinal cord and lung recovering substantially despite being late-responding tissues — an exception to the page's current "early recovers, late doesn't" dichotomy. Neither written in, per the query/lint distinction in CLAUDE.md (this was a check, not a re-ingest) — noted here for a future pass if the user wants the extra precision.
+
+## 2026-08-05 — Ingest: WHO/IAEA *Technical specifications of radiotherapy equipment for cancer treatment* (external `MP Library/` folder)
+
+User asked to "digest ; Technical specifications of radiotherapy equipment for cancer treatment," mid-turn during the lint pass above. Found the exact file (WHO/IAEA, 2021, ~140 pages). This is the manual-grade equipment source flagged as missing since the wiki's very first ingest (index.md/log.md, 2026-08-03: "No dosimetry-equipment or protocol pages were created from [the IAEA handbook] — a proper `equipment_` page needs a manual-grade source"). Presented the document's scope and asked the user how to split it into pages; user selected the recommended grouped-by-category option (~8 pages).
+
+Read Chapters 1–2 (overview, procurement packages) and Chapters 3–6 (EBRT equipment, brachytherapy equipment, establishing a radiotherapy service, emerging technology) substantially — full technical-specification/standards/safety/QA subsections for every device category, Chapter 5 read in full, Chapter 6 read substantially (§6.1–6.4). Wrote 8 new pages:
+
+- equipment_LINAC-and-cobalt60-teletherapy (LINAC, cobalt-60 teletherapy, orthovoltage/superficial X-ray)
+- equipment_simulators-and-imaging (CT simulator, conventional simulator, C-arm fluoroscopy, ultrasound)
+- equipment_treatment-planning-and-information-systems (EBRT TPS, OIS/RVS, brachytherapy TPS)
+- equipment_immobilization-and-mould-room
+- equipment_dosimetry-and-QC (EBRT + brachytherapy)
+- equipment_radiation-safety (EBRT + brachytherapy)
+- equipment_HDR-brachytherapy-afterloader
+- protocol_establishing-radiotherapy-service (project management, procurement/maintenance/lifecycle, patient safety/incident reporting, staff education, emerging technology)
+
+**No contradictions found** with existing wiki content — this closes the equipment-page gap flagged at project founding. Cross-linked extensively within the new equipment cluster and to existing pages: [[protocol_TRS-398-absorbed-dose-external-beam]] and [[protocol_TRS-277-absorbed-dose-photon-electron]] (reference dosimetry chain), [[protocol_ICRU-50-photon-beam-therapy]]/[[protocol_ICRU-83-IMRT]]/[[protocol_ICRU-91-stereotactic]] (volume/dose-reporting framework these devices serve), [[protocol_ICRU-38-gynae-intracavitary]]/[[protocol_ICRU-89-cervix-brachytherapy]] (brachytherapy prescribing), [[standard_IAEA-medical-physics-ethics]] (incident reporting/no-blame culture, practice audits, prudence/precaution principle), [[technique_SBRT]] and [[protocol_ICRU-91-stereotactic]] (hypofractionation-on-conventional-LINACs trend), and [[protocol_HyTEC-dose-constraints]].
+
+**Depth caveat:** each page's History section records exactly which subsections were read; brand-specific/"unconventional" LINAC designs (CyberKnife, TomoTherapy, Elekta Unity, ViewRay MRIdian, Varian Halcyon) were explicitly out of scope per the source itself, and Chapter 6's §6.5 onward (if present beyond hypofractionation/SRT) was not confirmed read.
+
+Updated `index.md` (8 new entries: 7 under Equipment, 1 under Protocols).

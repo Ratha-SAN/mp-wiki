@@ -34,6 +34,13 @@ Catalog of all wiki pages. Updated on every ingest.
 
 - [[equipment_radiation-detectors]] — ionization chambers/proportional counters, scintillators+PMT, semiconductor detectors, Cerenkov detectors, calorimeters
 - [[equipment_diagnostic-imaging-dosimetry]] — CT dosimetry (CTDI/CTDIvol/DLP), fluoroscopy dosimetry (Ka,r/AKAP, dose-rate limits), deterministic skin injury from interventional procedures
+- [[equipment_LINAC-and-cobalt60-teletherapy]] — LINAC and cobalt-60 teletherapy technical specs, beam energy trade-offs, neutron activation, orthovoltage/superficial X-ray units
+- [[equipment_simulators-and-imaging]] — CT simulator, conventional simulator, C-arm fluoroscopy, ultrasound imaging for EBRT/brachytherapy planning
+- [[equipment_treatment-planning-and-information-systems]] — EBRT/brachytherapy TPS, oncology information system (OIS), independent MU-calculation recommendation
+- [[equipment_immobilization-and-mould-room]] — site-specific patient immobilization equipment, LMPA block/cut-out fabrication
+- [[equipment_dosimetry-and-QC]] — reference/relative/in-vivo/radiology dosimetry equipment, end-to-end testing, HDR well-type chamber
+- [[equipment_radiation-safety]] — survey meters, personal monitoring, brachytherapy-specific area monitors and emergency source containers
+- [[equipment_HDR-brachytherapy-afterloader]] — HDR cobalt-60/iridium-192 afterloader, gynaecological applicator sets, source security and QA
 
 ## Protocols
 
@@ -50,6 +57,9 @@ Catalog of all wiki pages. Updated on every ingest.
 - [[protocol_ICRU-48-phantoms]] — physical phantom and computational model (mathematical vs. tomographic/voxel) terminology, Monte Carlo transport, animal radiobiology phantoms
 - [[protocol_ICRU-56-beta-ray-dosimetry]] — external beta-ray radiation-protection dosimetry, skin/eye-lens depth-dose quantities, extrapolation chambers
 - [[protocol_ICRU-60-quantities-and-units]] — formal definitions of radiometric, interaction-coefficient, dosimetric, and radioactivity quantities (kerma, cema, absorbed dose, LET)
+- [[protocol_TRS-277-absorbed-dose-photon-electron]] — 1987 IAEA air-kerma-based code of practice for photon/electron reference dosimetry, TPR20,10, Bragg-Gray calibration chain (superseded)
+- [[protocol_TRS-398-absorbed-dose-external-beam]] — current IAEA absorbed-dose-to-water code of practice (photon/electron/proton/ion), ND,w/kQ,Qo formalism, contrast with AAPM TG-51
+- [[protocol_establishing-radiotherapy-service]] — project management, procurement/maintenance/lifecycle, patient safety and incident reporting, staff education, emerging technology (electronic brachytherapy, IGRT/adaptive RT, hypofractionation on conventional LINACs)
 - [[protocol_ICRU-67-nuclear-medicine-dosimetry]] — internal radionuclide dosimetry, MIRD schema, self-dose/cross-dose, emission-range-dependent non-uniformity
 - [[protocol_ICRU-74-patient-dosimetry-imaging]] — diagnostic/interventional radiology patient dosimetry, KAP/DAP, effective-dose misuse caution, Diagnostic Reference Levels
 - [[protocol_ICRU-87-CT-dose-image-quality]] — CTDI/CTDIvol/DLP, Size-Specific Dose Estimate (SSDE), CT image-quality (MTF, noise-power spectrum)
@@ -66,3 +76,4 @@ Catalog of all wiki pages. Updated on every ingest.
 ## Standards
 
 - [[standard_ICRP-radiation-protection]] — ICRP principles, dose quantities/limits, risk coefficients, mammography risk-benefit case
+- [[standard_IAEA-medical-physics-ethics]] — professional ethics for CQMPs: biomedical/ICRP value frameworks, workplace ethics, research integrity, ten worked clinical dilemma scenarios
