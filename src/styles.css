@@ -157,6 +157,7 @@ select {
 /* ------------------------------------------------------------------ topbar */
 
 .topbar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -164,6 +165,28 @@ select {
   height: 48px;
   background: var(--surface-1);
   border-bottom: 2px solid var(--ink);
+}
+
+/* Gingham check, recreated in CSS (not the reference photo — that one's a
+   stock image) using the app's blue, fading out toward the right edge.
+   The topbar's real children get z-index:1 below so they reliably paint
+   above this regardless of how a given engine orders a negative-z-index
+   pseudo-element against the parent's own background. */
+.topbar > * {
+  position: relative;
+  z-index: 1;
+}
+
+.topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgb(42 120 214 / 45%) 0 12px, transparent 12px 24px),
+    repeating-linear-gradient(0deg, rgb(42 120 214 / 45%) 0 12px, transparent 12px 24px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 30%, transparent 82%);
+  mask-image: linear-gradient(to right, #000 0%, #000 30%, transparent 82%);
 }
 
 .logo-badge {
