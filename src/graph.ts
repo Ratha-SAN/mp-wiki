@@ -368,13 +368,15 @@ export class GraphView {
       .force(
         'link',
         forceLink<SimNode, SimLink>(this.links)
-          .distance((link) => 34 + 5 * Math.min(8, (link.source.ref.deg + link.target.ref.deg) / 2))
-          .strength(0.35),
+          .distance((link) => 54 + 7 * Math.min(8, (link.source.ref.deg + link.target.ref.deg) / 2))
+          .strength(0.3),
       )
-      .force('charge', forceManyBody<SimNode>().strength(-180).distanceMax(650))
-      .force('collide', forceCollide<SimNode>((node) => radiusOf(node.ref) + 6))
-      .force('x', forceX(this.width / 2).strength(0.035))
-      .force('y', forceY(this.height / 2).strength(0.035))
+      .force('charge', forceManyBody<SimNode>().strength(-320).distanceMax(800))
+      // Padded well past the circle itself so a label hanging below one node
+      // has room before it runs into its neighbour.
+      .force('collide', forceCollide<SimNode>((node) => radiusOf(node.ref) + 22))
+      .force('x', forceX(this.width / 2).strength(0.03))
+      .force('y', forceY(this.height / 2).strength(0.03))
       .alpha(initial ? 1 : 0.7)
       .alphaDecay(0.024)
       .velocityDecay(0.34)
