@@ -24,6 +24,7 @@ interface SimLink extends SimulationLinkDatum<SimNode> {
 interface GraphOptions {
   container: HTMLElement;
   data: GraphData;
+  newIds: Set<string>;
   onOpen: (id: string) => void;
 }
 
@@ -39,6 +40,7 @@ interface Theme {
   labelHalo: string;
   series: string[];
   other: string;
+  new: string;
 }
 
 type ColorMode = 'role' | 'folder' | 'type';
@@ -90,6 +92,7 @@ export class GraphView {
   private folders = new Set<string>();
   private tags = new Set<string>();
   private showUnresolved = true;
+  private showNew = true;
   private hops = 0; // 0 = whole vault
   private colorMode: ColorMode = readColorMode();
   /** folder path / note type -> categorical slot, fixed for the whole session (never re-ranked). */
@@ -264,6 +267,23 @@ export class GraphView {
 
     this.countEl.className = 'graph-count';
     bar.append(hopsWrap, colourWrap, unresolved, fit, this.countEl);
+
+    if (this.opts.newIds.size) {
+      const newToggle = document.createElement('label');
+      newToggle.className = 'graph-check graph-check-new';
+      const newBox = document.createElement('input');
+      newBox.type = 'checkbox';
+      newBox.checked = this.showNew;
+      newBox.title = 'Ring notes added since your last visit';
+      newBox.addEventListener('change', () => {
+        this.showNew = newBox.checked;
+        this.renderLegend();
+        this.draw();
+      });
+      newToggle.append(newBox, document.createTextNode(`New (${this.opts.newIds.size})`));
+      bar.append(newToggle);
+    }
+
     return bar;
   }
 
@@ -275,13 +295,20 @@ export class GraphView {
     const entry = (swatch: string, label: string) =>
       `<li><span class="swatch" style="${swatch}"></span>${escapeHtml(label)}</li>`;
     const ring = `background:${this.theme.surface};box-shadow:inset 0 0 0 2.5px ${this.theme.active}`;
+    const newEntry =
+      this.showNew && this.opts.newIds.size
+        ? entry(`background:${this.theme.surface};box-shadow:inset 0 0 0 2px ${this.theme.new}`, 'New since last visit')
+        : null;
 
     if (this.colorMode === 'role') {
       this.legend.innerHTML = [
         entry(`background:${this.theme.node}`, 'Note'),
         entry(`background:${this.theme.active}`, 'Open note'),
         entry(`background:${this.theme.surface};border:1.5px dashed ${this.theme.unresolved}`, 'Unresolved link'),
-      ].join('');
+        newEntry,
+      ]
+        .filter(Boolean)
+        .join('');
       return;
     }
 
@@ -298,6 +325,7 @@ export class GraphView {
     rows.push(
       entry(`background:${this.theme.surface};border:1.5px dashed ${this.theme.unresolved}`, 'Unresolved link'),
     );
+    if (newEntry) rows.push(newEntry);
     this.legend.innerHTML = rows.join('');
   }
 
@@ -449,6 +477,7 @@ export class GraphView {
       label: pick('--graph-label', '#2b2b2b'),
       labelHalo: pick('--graph-label-halo', '#ffffff'),
       other: pick('--graph-other', '#6f6f68'),
+      new: pick('--new', '#1baf7a'),
       series: Array.from({ length: SERIES_SLOTS }, (_, i) => pick(`--series-${i + 1}`, '#2a78d6')),
     };
   }
@@ -523,6 +552,17 @@ export class GraphView {
           ctx.lineWidth = (isActive ? 2.5 : 1.5) / t.k;
           ctx.strokeStyle = isActive ? theme.active : this.fillFor(node.ref);
           ctx.stroke();
+        }
+        if (this.showNew && this.opts.newIds.has(node.ref.id)) {
+          ctx.setLineDash([2 / t.k, 2 / t.k]);
+          ctx.lineWidth = 2 / t.k;
+          ctx.strokeStyle = theme.new;
+          ctx.globalAlpha = inSet ? 1 : lerp(1, 0.4, mix);
+          ctx.beginPath();
+          ctx.arc(node.x ?? 0, node.y ?? 0, radius + 4 / t.k, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.globalAlpha = inSet ? 1 : lerp(1, 0.22, mix);
         }
       }
     }

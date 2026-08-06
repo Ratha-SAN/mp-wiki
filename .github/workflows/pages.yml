@@ -22,6 +22,9 @@ jobs:
         with:
           # Harmless today; lets the vault become a submodule later without edits here.
           submodules: recursive
+          # Full history, not the default shallow clone — the build reads each note's
+          # first commit date from git log to flag recently-added notes as new.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:

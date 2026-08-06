@@ -12,6 +12,8 @@ export interface GraphNode {
   tags: string[];
   /** Frontmatter `type:` (e.g. "concept", "protocol") — null when absent. */
   noteType: string | null;
+  /** ISO date of the commit that first added this note; null off-git or unresolved. */
+  createdAt: string | null;
   deg: number;
 }
 

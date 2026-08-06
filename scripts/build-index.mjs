@@ -17,6 +17,7 @@ import fg from 'fast-glob';
 import matter from 'gray-matter';
 
 import { createMarkdown, scanTokens } from './lib/markdown.mjs';
+import { loadCreationDates } from './lib/git-history.mjs';
 import { VaultIndex } from './lib/resolve.mjs';
 import { baseOf, dirOf, extOf, prettifyTitle, slugifyHeading, stripExt } from './lib/paths.mjs';
 
@@ -48,6 +49,7 @@ async function main() {
   ).sort();
 
   // --- pass 1: frontmatter, so unpublished notes disappear before link resolution
+  const createdDates = loadCreationDates(ROOT, config.vaultPath);
   const notes = [];
   for (const relPath of notePaths) {
     const raw = await fs.readFile(path.join(vaultDir, relPath), 'utf8');
@@ -72,6 +74,7 @@ async function main() {
       body: parsed.content,
       tags: frontmatterTags(data),
       noteType: typeof data.type === 'string' && data.type.trim() ? data.type.trim() : null,
+      createdAt: createdDates.get(relPath) ?? null,
     });
   }
 
@@ -97,6 +100,7 @@ async function main() {
       kind: 'note',
       tags: [...note.tags],
       noteType: note.noteType,
+      createdAt: note.createdAt,
     });
   }
 
@@ -163,6 +167,7 @@ async function main() {
             kind: 'unresolved',
             tags: [],
             noteType: null,
+            createdAt: null,
           });
         }
       }
@@ -220,6 +225,7 @@ async function main() {
       kind: n.kind,
       tags: n.tags,
       noteType: n.noteType,
+      createdAt: n.createdAt,
       deg: (adjacency.get(n.id).out.length + adjacency.get(n.id).in.length) || 0,
     })),
     edges: edgeList,

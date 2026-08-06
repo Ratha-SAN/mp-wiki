@@ -26,6 +26,7 @@
   --graph-label: #34332f;
   --graph-label-halo: #fcfcfb;
   --graph-other: #6f6e67;
+  --new: #1baf7a;
 
   /* Categorical slots, assigned in fixed order and never cycled. */
   --series-1: #2a78d6;
@@ -71,6 +72,7 @@
     --graph-label: #d9d8d1;
     --graph-label-halo: #1a1a19;
     --graph-other: #a3a29a;
+    --new: #199e70;
 
     --series-1: #3987e5;
     --series-2: #d95926;
@@ -111,6 +113,7 @@
   --graph-label: #d9d8d1;
   --graph-label-halo: #1a1a19;
   --graph-other: #a3a29a;
+  --new: #199e70;
 
   --series-1: #3987e5;
   --series-2: #d95926;
@@ -406,6 +409,16 @@ select {
   background: var(--accent);
 }
 
+.new-dot {
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--new);
+  flex: none;
+  display: inline-block;
+}
+
 .results {
   margin: 0;
   padding: 0;
@@ -485,6 +498,26 @@ mark {
   font-size: 27px;
   line-height: 1.25;
   letter-spacing: -0.01em;
+}
+
+.new-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--new);
+  /* Fixed, not themed: --new doesn't flip light/dark the way --accent does, so a
+     dark ink reads reliably against it (~6:1+) in both modes, unlike white (~3:1). */
+  color: #0d2318;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.new-badge-inline {
+  margin-left: 10px;
+  font-size: 12px;
 }
 
 .note-tags {
@@ -832,6 +865,11 @@ mark {
   font-size: 12px;
   color: var(--text-2);
   cursor: pointer;
+}
+
+.graph-check-new {
+  /* Border only — --new isn't a validated text colour against this surface. */
+  border-color: var(--new);
 }
 
 .graph-count {

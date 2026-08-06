@@ -5,6 +5,7 @@ interface ReaderOptions {
   article: HTMLElement;
   scroller: HTMLElement;
   data: GraphData;
+  newIds: Set<string>;
   onOpen: (id: string) => void;
 }
 
@@ -67,11 +68,12 @@ export class Reader {
   }
 
   private renderNote(doc: NoteDoc): void {
+    const isNew = this.opts.newIds.has(doc.id);
     const meta = document.createElement('header');
     meta.className = 'note-header';
     meta.innerHTML = `
       <p class="note-path">${escapeHtml(doc.path)}</p>
-      <h1 class="note-title">${escapeHtml(doc.title)}</h1>
+      <h1 class="note-title">${escapeHtml(doc.title)}${isNew ? '<span class="new-badge new-badge-inline">New</span>' : ''}</h1>
     `;
     if (doc.tags.length) {
       const tags = document.createElement('ul');

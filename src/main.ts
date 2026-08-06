@@ -3,6 +3,7 @@ import './styles.css';
 
 import { loadGraph } from './data';
 import { GraphView } from './graph';
+import { computeNewNoteIds } from './newSince';
 import { Reader } from './reader';
 import { FileTree } from './tree';
 import type { GraphData } from './types';
@@ -31,8 +32,13 @@ async function boot(): Promise<void> {
 
   document.title = data.siteTitle;
   el('site-title').textContent = data.siteTitle;
-  el('vault-stats').textContent =
-    `${data.stats.notes} notes · ${data.stats.edges} links · ${data.stats.unresolved} unresolved`;
+  // Reads (and advances) the "seen until" watermark, so this must run exactly
+  // once per page load — every view below shares this same result.
+  const newIds = computeNewNoteIds(data);
+  const base = `${data.stats.notes} notes · ${data.stats.edges} links · ${data.stats.unresolved} unresolved`;
+  el('vault-stats').innerHTML = newIds.size
+    ? `${base} · <span class="new-badge">${newIds.size} new</span>`
+    : base;
 
   if (!data.stats.notes) {
     el('note').innerHTML = `<div class="note-stub"><h1 class="note-title">Empty vault</h1>
@@ -53,15 +59,17 @@ async function boot(): Promise<void> {
     results: el('results'),
     search: el<HTMLInputElement>('search-input'),
     data,
+    newIds,
     onOpen: open,
   });
   const reader = new Reader({
     article: el('note'),
     scroller: el('reader-scroll'),
     data,
+    newIds,
     onOpen: open,
   });
-  const graph = new GraphView({ container: el('pane-graph'), data, onOpen: open });
+  const graph = new GraphView({ container: el('pane-graph'), data, newIds, onOpen: open });
 
   const known = new Set(data.nodes.map((node) => node.id));
   const render = (id: string) => {
