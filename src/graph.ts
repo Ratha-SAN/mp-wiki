@@ -14,6 +14,9 @@ import type { GraphData, GraphEdge, GraphNode } from './types';
 
 interface SimNode extends SimulationNodeDatum {
   readonly ref: GraphNode;
+  /** This node's assigned point inside the brain silhouette; see `sampleBrainPoints`. */
+  bx?: number;
+  by?: number;
 }
 interface SimLink extends SimulationLinkDatum<SimNode> {
   source: SimNode;
@@ -75,6 +78,10 @@ export class GraphView {
   private width = 0;
   private height = 0;
   private frame = 0;
+  /** Pixels per normalized brain-shape unit; recomputed whenever the pane resizes. */
+  private brainScale = 0;
+  /** Set once the container has reported a real (non-collapsed) size — see resize(). */
+  private sized = false;
 
   private activeId: string | null = null;
   private hovered: SimNode | null = null;
@@ -129,8 +136,10 @@ export class GraphView {
       this.draw();
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
+    // On mobile the graph pane starts hidden (display: none) behind the Files/Note
+    // tabs, so the container has no real size yet — resize() itself does the first
+    // rebuild once it sees genuine dimensions, whether that's now or on tab switch.
     this.resize();
-    this.rebuild(true);
   }
 
   setActive(id: string | null): void {
@@ -379,6 +388,7 @@ export class GraphView {
     this.visible = this.nodes.filter((node) => keep.has(node.ref.i));
 
     spread(this.visible, this.width, this.height);
+    assignBrainTargets(this.visible, this.width, this.height, this.brainScale);
 
     this.links = this.opts.data.edges
       .filter((edge) => keep.has(edge.s) && keep.has(edge.t))
@@ -403,8 +413,12 @@ export class GraphView {
       // Padded well past the circle itself so a label hanging below one node
       // has room before it runs into its neighbour.
       .force('collide', forceCollide<SimNode>((node) => radiusOf(node.ref) + 22))
-      .force('x', forceX(this.width / 2).strength(0.03))
-      .force('y', forceY(this.height / 2).strength(0.03))
+      // Each node eases toward its own point inside a brain-shaped silhouette (two
+      // hemispheres + corpus callosum + cerebellum + stem, assigned in `rebuild()`)
+      // rather than a single centre — the whole layout's outline reads as a brain
+      // while charge/collide/link still give the interior its usual organic feel.
+      .force('brainX', forceX<SimNode>((node) => node.bx ?? this.width / 2).strength(0.45))
+      .force('brainY', forceY<SimNode>((node) => node.by ?? this.height / 2).strength(0.45))
       .alpha(initial ? 1 : 0.7)
       .alphaDecay(0.024)
       .velocityDecay(0.34)
@@ -459,8 +473,31 @@ export class GraphView {
     this.canvas.style.width = `${this.width}px`;
     this.canvas.style.height = `${this.height}px`;
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (changed && !this.userFramed && this.visible.length) this.fit(false);
-    else this.draw();
+    this.brainScale =
+      Math.min(this.width / (BRAIN_HALF_X * 2), this.height / (BRAIN_HALF_Y * 2)) * 0.86;
+
+    // The very first time the container reports a real (non-collapsed) size — whether
+    // that's immediately, or only once a hidden mobile tab is switched to — do the
+    // actual first build here. Starting the simulation earlier, at a 0×0 placeholder
+    // size, would let charge repulsion at near-zero separation fling nodes out
+    // chaotically before there's a real shape to settle into.
+    const justSized = !this.sized && this.width > 2 && this.height > 2;
+    if (justSized) this.sized = true;
+    if (justSized) {
+      this.rebuild(true);
+      return;
+    }
+
+    if (changed && this.visible.length) {
+      // The brain-shape targets are absolute pixel points sized to the old pane —
+      // stale the moment it resizes, so every visible node needs a fresh one before
+      // the simulation is nudged back awake to ease toward it.
+      assignBrainTargets(this.visible, this.width, this.height, this.brainScale);
+      this.simulation?.alpha(0.3).restart();
+      if (!this.userFramed) this.fit(false);
+    } else {
+      this.draw();
+    }
   }
 
   private readTheme(): void {
@@ -865,6 +902,117 @@ function matchesFolder(folder: string, selected: Set<string>): boolean {
 function radiusOf(node: GraphNode): number {
   const base = node.kind === 'unresolved' ? 3.4 : 4.2;
   return Math.min(15, base + Math.sqrt(node.deg) * 1.7);
+}
+
+interface BrainRegion {
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+}
+
+/**
+ * A brain silhouette as a union of ellipses in a normalized [-1, 1]-ish space: two
+ * hemisphere lobes separated by a gap (the longitudinal fissure) up top, a bridging
+ * region low in the middle where they anatomically connect (the fissure doesn't run
+ * the full height), twin cerebellum lobes underneath, and a brainstem tail.
+ */
+const BRAIN_REGIONS: BrainRegion[] = [
+  { cx: -0.52, cy: -0.08, rx: 0.42, ry: 0.58 }, // left hemisphere
+  { cx: 0.52, cy: -0.08, rx: 0.42, ry: 0.58 }, // right hemisphere
+  { cx: 0, cy: 0.28, rx: 0.14, ry: 0.22 }, // corpus callosum bridge (closes the fissure low down only)
+  { cx: -0.22, cy: 0.72, rx: 0.22, ry: 0.16 }, // left cerebellum lobe
+  { cx: 0.22, cy: 0.72, rx: 0.22, ry: 0.16 }, // right cerebellum lobe
+  { cx: 0, cy: 1, rx: 0.07, ry: 0.14 }, // brainstem
+];
+const BRAIN_HALF_X = 1;
+const BRAIN_HALF_Y = 1.16;
+
+function insideBrain(x: number, y: number): boolean {
+  for (const r of BRAIN_REGIONS) {
+    const ex = (x - r.cx) / r.rx;
+    const ey = (y - r.cy) / r.ry;
+    if (ex * ex + ey * ey <= 1) return true;
+  }
+  return false;
+}
+
+/**
+ * Deterministic jittered-grid sample of `count` points spread evenly across the brain
+ * silhouette (normalized units). A plain random scatter clumps noticeably at this size;
+ * a jittered grid reads as even coverage while still avoiding a rigid, obviously-gridded
+ * look. Resolution grows until there are enough in-shape candidates to draw `count` from.
+ */
+function sampleBrainPoints(count: number): { x: number; y: number }[] {
+  if (count <= 0) return [];
+  const x0 = -1.02;
+  const x1 = 1.02;
+  const y0 = -0.75;
+  const y1 = 1.1;
+  let resolution = Math.max(4, Math.ceil(Math.sqrt((count * 2.4) / ((x1 - x0) * (y1 - y0)))));
+  let points: { x: number; y: number }[] = [];
+  let seed = 1;
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  for (let attempt = 0; attempt < 6 && points.length < count; attempt += 1) {
+    points = [];
+    seed = 1;
+    const cell = Math.min(x1 - x0, y1 - y0) / resolution;
+    const cols = Math.ceil((x1 - x0) / cell);
+    const rows = Math.ceil((y1 - y0) / cell);
+    for (let r = 0; r < rows; r += 1) {
+      for (let c = 0; c < cols; c += 1) {
+        const x = x0 + (c + 0.3 + rand() * 0.4) * cell;
+        const y = y0 + (r + 0.3 + rand() * 0.4) * cell;
+        if (insideBrain(x, y)) points.push({ x, y });
+      }
+    }
+    resolution = Math.ceil(resolution * 1.4);
+  }
+  // Fisher-Yates with a small deterministic PRNG so the exact `count` points drawn from
+  // the candidate pool are spread through it, not just the first ones scanned.
+  for (let i = points.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [points[i], points[j]] = [points[j], points[i]];
+  }
+  return points.slice(0, count);
+}
+
+/**
+ * Gives each node a fixed point inside the brain silhouette to ease toward (`bx`/`by`),
+ * greedily matched to whichever node currently sits closest to it — this keeps the
+ * reassignment on every rebuild from sending nodes on long unnecessary journeys across
+ * the shape when the visible set only changed a little.
+ */
+function assignBrainTargets(nodes: SimNode[], width: number, height: number, scale: number): void {
+  if (!scale) return;
+  const cx = width / 2;
+  const cy = height / 2;
+  const targets = sampleBrainPoints(nodes.length).map((p) => ({
+    x: cx + p.x * scale,
+    y: cy + p.y * scale,
+  }));
+  const remaining = targets.slice();
+  for (const node of nodes) {
+    const nx = node.x ?? cx;
+    const ny = node.y ?? cy;
+    let bestJ = 0;
+    let bestD = Infinity;
+    for (let j = 0; j < remaining.length; j += 1) {
+      const dx = remaining[j].x - nx;
+      const dy = remaining[j].y - ny;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) {
+        bestD = d;
+        bestJ = j;
+      }
+    }
+    const target = remaining.splice(bestJ, 1)[0];
+    node.bx = target.x;
+    node.by = target.y;
+  }
 }
 
 /** Give brand-new nodes a starting position so the simulation does not explode. */
