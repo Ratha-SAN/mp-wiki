@@ -73,7 +73,6 @@ export class GraphView {
   /** Where the wheel handler wants to be; `transform` eases toward this every frame. */
   private targetTransform = { k: 1, x: 0, y: 0 };
   private chaseFrame = 0;
-  private fitToken = 0;
   private theme!: Theme;
   private width = 0;
   private height = 0;
@@ -150,7 +149,25 @@ export class GraphView {
 
   /** Re-centre the view on everything currently drawn. */
   fit(animate = true): void {
-    if (!this.visible.length) return;
+    const target = this.computeFitTransform();
+    if (!target) return;
+    if (!animate) {
+      this.transform = target;
+      this.targetTransform = target;
+      this.draw();
+      return;
+    }
+    // Retargeting the same continuous chase used for wheel-zoom (rather than starting
+    // a fresh discrete tween) matters during a simulation settle: fit() gets called on
+    // most ticks while the layout is still moving, and restarting an ease-out repeatedly
+    // — each one cut off by the next before finishing — reads as a rhythmic bounce. One
+    // ongoing chase that just gets a new target every tick has no restart to stutter on.
+    this.targetTransform = target;
+    this.startZoomChase();
+  }
+
+  private computeFitTransform(): { k: number; x: number; y: number } | null {
+    if (!this.visible.length) return null;
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -167,35 +184,11 @@ export class GraphView {
       MIN_ZOOM,
       1.6,
     );
-    const target = {
+    return {
       k,
       x: this.width / 2 - ((minX + maxX) / 2) * k,
       y: this.height / 2 - ((minY + maxY) / 2) * k,
     };
-    this.chaseFrame = 0; // a fit overrides any in-flight wheel-zoom chase
-    if (!animate) {
-      this.transform = target;
-      this.targetTransform = target;
-      this.draw();
-      return;
-    }
-    const from = { ...this.transform };
-    const start = performance.now();
-    const token = ++this.fitToken;
-    const step = (now: number) => {
-      if (token !== this.fitToken) return; // superseded by a newer fit()
-      const t = Math.min(1, (now - start) / 320);
-      const e = t * (2 - t);
-      this.transform = {
-        k: from.k + (target.k - from.k) * e,
-        x: from.x + (target.x - from.x) * e,
-        y: from.y + (target.y - from.y) * e,
-      };
-      this.targetTransform = this.transform;
-      this.draw();
-      if (t < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
   }
 
   /* -------------------------------------------------------------- controls */
@@ -401,7 +394,6 @@ export class GraphView {
     this.countEl.textContent = `${this.visible.length} notes · ${this.links.length} links`;
 
     this.simulation?.stop();
-    let settleTicks = 0;
     this.simulation = forceSimulation(this.visible)
       .force(
         'link',
@@ -424,10 +416,11 @@ export class GraphView {
       .velocityDecay(0.34)
       .on('tick', () => {
         this.draw();
-        // Re-target the camera every few ticks while the layout is still moving, so
-        // it visibly tracks the graph unfolding instead of sitting on a stale frame
-        // (fit()'s own tween just gets superseded smoothly — see the token guard).
-        if (!this.userFramed && ++settleTicks % 8 === 0) this.fit(true);
+        // Re-target the camera every tick while the layout is still moving, so it
+        // visibly tracks the graph unfolding. fit() just retargets the one ongoing
+        // chase rather than starting a new tween, so this can't stutter no matter how
+        // often it's called.
+        if (!this.userFramed) this.fit(true);
       })
       .on('end', () => {
         if (!this.userFramed) this.fit(true);
@@ -775,7 +768,6 @@ export class GraphView {
       (event) => {
         event.preventDefault();
         this.userFramed = true;
-        this.fitToken += 1; // a manual zoom cancels any fit() tween in flight
         const rect = canvas.getBoundingClientRect();
         const px = event.clientX - rect.left;
         const py = event.clientY - rect.top;
