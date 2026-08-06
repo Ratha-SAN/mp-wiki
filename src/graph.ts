@@ -420,7 +420,7 @@ export class GraphView {
       .force('brainX', forceX<SimNode>((node) => node.bx ?? this.width / 2).strength(0.45))
       .force('brainY', forceY<SimNode>((node) => node.by ?? this.height / 2).strength(0.45))
       .alpha(initial ? 1 : 0.7)
-      .alphaDecay(0.024)
+      .alphaDecay(0.05)
       .velocityDecay(0.34)
       .on('tick', () => {
         this.draw();
@@ -433,11 +433,13 @@ export class GraphView {
         if (!this.userFramed) this.fit(true);
       });
 
-    // A light warm-up avoids opening on total chaos, but stays short enough that
-    // most of the settle happens on-screen via the tick loop above — that visible
-    // drift-into-place, camera included, is what makes the layout read as fluid
-    // instead of snapping straight to its final position.
-    this.simulation.tick(initial ? 20 : 8);
+    // The brain-shape targets pull nodes across a wider spread than a single centre
+    // point did, so a short warm-up left most of the growth to happen live on screen —
+    // several seconds of the camera continuously zooming out to keep chasing a still-
+    // expanding bounding box, which read as unsettled rather than fluid. A longer
+    // warm-up gets most of that expansion done before the first paint, leaving only a
+    // brief, quick tail to settle on screen.
+    this.simulation.tick(initial ? 45 : 8);
     this.fit(!initial);
     this.userFramed = false;
   }
