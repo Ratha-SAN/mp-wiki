@@ -413,7 +413,7 @@ export class GraphView {
       .force('brainY', forceY<SimNode>((node) => node.by ?? this.height / 2).strength(0.45))
       .alpha(initial ? 1 : 0.7)
       .alphaDecay(0.05)
-      .velocityDecay(0.34)
+      .velocityDecay(0.5)
       .on('tick', () => {
         this.draw();
         // Re-target the camera every tick while the layout is still moving, so it
@@ -427,12 +427,11 @@ export class GraphView {
       });
 
     // The brain-shape targets pull nodes across a wider spread than a single centre
-    // point did, so a short warm-up left most of the growth to happen live on screen —
-    // several seconds of the camera continuously zooming out to keep chasing a still-
-    // expanding bounding box, which read as unsettled rather than fluid. A longer
-    // warm-up gets most of that expansion done before the first paint, leaving only a
-    // brief, quick tail to settle on screen.
-    this.simulation.tick(initial ? 45 : 8);
+    // point did, so a short warm-up left most of the movement to happen live on screen.
+    // Enough warm-up ticks to already be past alphaMin by the first paint means the
+    // layout appears essentially in its resting position immediately, with at most a
+    // faint, heavily-damped settle left over rather than a multi-second live unfold.
+    this.simulation.tick(initial ? 140 : 30);
     this.fit(!initial);
     this.userFramed = false;
   }
