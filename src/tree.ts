@@ -95,7 +95,7 @@ export class FileTree {
         item.append(row, children);
       } else {
         const isNew = this.opts.newIds.has(entry.id!);
-        row.innerHTML = `<span class="dot" aria-hidden="true"></span><span class="tree-label">${escapeHtml(entry.name)}</span>${isNew ? '<span class="new-dot" title="Added since your last visit"></span>' : ''}`;
+        row.innerHTML = `<span class="dot" aria-hidden="true"></span><span class="tree-text"><span class="tree-label">${escapeHtml(entry.name)}</span><span class="tree-filename">${escapeHtml(basename(entry.path))}</span></span>${isNew ? '<span class="new-dot" title="Added since your last visit"></span>' : ''}`;
         row.title = entry.path;
         row.addEventListener('click', () => this.opts.onOpen(entry.id!));
         this.rows.set(entry.id!, row);
@@ -216,6 +216,11 @@ function countNotes(entry: TreeEntry): number {
 function folderPathOf(item: HTMLElement): string | null {
   const row = item.querySelector<HTMLElement>(':scope > .tree-row .tree-label');
   return row ? (item.dataset.path ?? row.textContent) : null;
+}
+
+function basename(path: string): string {
+  const at = path.lastIndexOf('/');
+  return at === -1 ? path : path.slice(at + 1);
 }
 
 function escapeHtml(value: string): string {
