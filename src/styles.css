@@ -404,22 +404,19 @@ select {
   font-weight: 700;
 }
 
-.tree-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
 .tree-label {
   overflow-wrap: anywhere;
+  flex: 1;
+  min-width: 0;
 }
 
-.tree-filename {
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: 11px;
+.file-icon {
+  flex: none;
   color: var(--text-3);
-  overflow-wrap: anywhere;
+}
+
+.tree-row.is-active .file-icon {
+  color: var(--accent);
 }
 
 .tree-count {
@@ -442,18 +439,6 @@ select {
 
 .tree-folder[aria-expanded='false'] > .tree-row .twisty {
   transform: rotate(0deg);
-}
-
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--border-strong);
-  flex: none;
-}
-
-.tree-row.is-active .dot {
-  background: var(--accent);
 }
 
 .new-dot {

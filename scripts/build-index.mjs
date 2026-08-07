@@ -383,7 +383,9 @@ function buildTree(noteNodes) {
   const sort = (node) => {
     node.children.sort((a, b) => {
       if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
-      return a.name.localeCompare(b.name, undefined, { numeric: true });
+      const aKey = a.type === 'note' ? a.id : a.name;
+      const bKey = b.type === 'note' ? b.id : b.name;
+      return aKey.localeCompare(bKey, undefined, { numeric: true });
     });
     for (const child of node.children) if (child.type === 'folder') sort(child);
   };

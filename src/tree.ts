@@ -19,6 +19,9 @@ interface SearchItem {
 
 const STORAGE_KEY = 'mp-wiki:collapsed';
 
+const FILE_ICON =
+  '<svg class="file-icon" aria-hidden="true" viewBox="0 0 24 24" width="15" height="15"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M6.5 2.75h8.25L19 7.25V20.5a.75.75 0 0 1-.75.75H6.5a.75.75 0 0 1-.75-.75V3.5a.75.75 0 0 1 .75-.75Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M14.5 2.75V7.5H19"/></svg>';
+
 export class FileTree {
   private readonly opts: TreeOptions;
   private readonly collapsed: Set<string>;
@@ -95,7 +98,7 @@ export class FileTree {
         item.append(row, children);
       } else {
         const isNew = this.opts.newIds.has(entry.id!);
-        row.innerHTML = `<span class="dot" aria-hidden="true"></span><span class="tree-text"><span class="tree-label">${escapeHtml(entry.name)}</span><span class="tree-filename">${escapeHtml(basename(entry.path))}</span></span>${isNew ? '<span class="new-dot" title="Added since your last visit"></span>' : ''}`;
+        row.innerHTML = `${FILE_ICON}<span class="tree-label">${escapeHtml(entry.id ?? basename(entry.path))}</span>${isNew ? '<span class="new-dot" title="Added since your last visit"></span>' : ''}`;
         row.title = entry.path;
         row.addEventListener('click', () => this.opts.onOpen(entry.id!));
         this.rows.set(entry.id!, row);
