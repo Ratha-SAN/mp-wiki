@@ -19,3 +19,4 @@ updated: 2026-08-03
 ## History
 
 - 2026-08-03: Page created from ingest of IAEA Training Course Series 42, *Radiation Biology: A Handbook for Teachers and Students* (2010), §2.2 (Physics and chemistry of radiation interactions with matter).
+- 2026-08-08: See new page [[concept_diagnostic-radiology-physics-fundamentals]] for a quantitative, diagnostic-energy-range (≲150 keV) deepening of the interaction physics summarized here — cross-section formulas, K-edge data, attenuation/stopping-power coefficients, from IAEA's *Diagnostic Radiology Physics* handbook. No contradictions; that page extends rather than revises this one.

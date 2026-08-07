@@ -27,6 +27,9 @@ Catalog of all wiki pages. Updated on every ingest.
 - [[concept_biodosimetry-techniques]] — dicentric assay, CBMN, FISH translocation analysis, PCC assay, γH2AX foci, gene-expression biodosimetry
 - [[concept_cataract-and-cardiovascular-late-effects]] — radiation cataract ("cataractogenic load"), radiation-induced cardiovascular disease, mechanisms and latency
 - [[concept_ethics-and-risk-communication-in-radiation-protection]] — ICRP 138 ethical values, risk-perception psychology, value-action gap, risk communication principles
+- [[concept_diagnostic-radiology-physics-fundamentals]] — diagnostic-energy (≲150 keV) interaction cross-sections, K-edges, attenuation/stopping-power coefficients, CPE, cavity theory (Bragg-Gray, Fano theorem)
+- [[concept_medical-image-quality-theory]] — LSI systems theory, contrast/MTF/PSF/LSF/ESF, noise power spectrum, DQE/NEQ, SNR, Rose criterion, Wagner taxonomy
+- [[concept_projection-radiography-physics]] — projection geometry (ISL, magnification, geometric unsharpness), scatter fraction/SPR, contrast agents/K-edge, kV/mAs technique selection, antiscatter grids
 
 (Note: `raw/Basic Clinical Radiobiology.pdf` (Joiner & van der Kogel, 5th ed.) and `raw/Radiobiology Self-Assessment Guide.pdf` (Yu & Abazeed, eds.) were both ingested at lighter depth — see log.md 2026-08-03 entries — since both substantially overlap material already in this wiki. Coverage gaps identified but not expanded (available in `raw/` for future work): gene therapy, hyperthermia, general stem-cell biology, immunotherapy agent mechanisms, radiogenomics methodology.)
 
@@ -41,6 +44,9 @@ Catalog of all wiki pages. Updated on every ingest.
 - [[equipment_dosimetry-and-QC]] — reference/relative/in-vivo/radiology dosimetry equipment, end-to-end testing, HDR well-type chamber
 - [[equipment_radiation-safety]] — survey meters, personal monitoring, brachytherapy-specific area monitors and emergency source containers
 - [[equipment_HDR-brachytherapy-afterloader]] — HDR cobalt-60/iridium-192 afterloader, gynaecological applicator sets, source security and QA
+- [[equipment_x-ray-tube-and-generator]] — diagnostic kV-range X-ray tube (anode/cathode, line focus, heel effect, thermal ratings) and generator waveform technology (single/three-phase, high-frequency), AEC, filtration
+- [[equipment_projection-radiography-receptors]] — screen-film systems (H&D curve, reciprocity), CR (photostimulable phosphor), flat panel direct/indirect conversion (a-Se, CsI), DQE/MTF comparison across receptor types
+- [[equipment_fluoroscopy]] — XRII physics (gain, distortions), video/CCD cameras, AEC, spectral shaping, DSA/roadmapping/rotational angiography, C-arm/remote/cardiology configurations, reference point air kerma and peak skin dose
 
 ## Protocols
 
@@ -60,6 +66,9 @@ Catalog of all wiki pages. Updated on every ingest.
 - [[protocol_TRS-277-absorbed-dose-photon-electron]] — 1987 IAEA air-kerma-based code of practice for photon/electron reference dosimetry, TPR20,10, Bragg-Gray calibration chain (superseded)
 - [[protocol_TRS-398-absorbed-dose-external-beam]] — current IAEA absorbed-dose-to-water code of practice (photon/electron/proton/ion), ND,w/kQ,Qo formalism, contrast with AAPM TG-51
 - [[protocol_establishing-radiotherapy-service]] — project management, procurement/maintenance/lifecycle, patient safety and incident reporting, staff education, emerging technology (electronic brachytherapy, IGRT/adaptive RT, hypofractionation on conventional LINACs)
+- [[protocol_NCRP-facility-shielding]] — NCRP 147 (diagnostic imaging, air-kerma) + NCRP 151 (megavoltage RT, dose-equivalent, neutron/maze/door design); shared workload/use/occupancy-factor framework
+- [[protocol_IAEA-clinical-training-curricula]] — TCS-37/47/50 clinical training of medical physicists (radiation oncology/diagnostic radiology/nuclear medicine); 4-year CQMP qualification formula
+- [[protocol_planned-exposure-situation-requirements]] — BSS/GSR Part 3 Requirements 6-42 in operative detail: generic/occupational/public/medical exposure; DRLs, patient release after radionuclide therapy, unintended exposure investigation
 - [[protocol_ICRU-67-nuclear-medicine-dosimetry]] — internal radionuclide dosimetry, MIRD schema, self-dose/cross-dose, emission-range-dependent non-uniformity
 - [[protocol_ICRU-74-patient-dosimetry-imaging]] — diagnostic/interventional radiology patient dosimetry, KAP/DAP, effective-dose misuse caution, Diagnostic Reference Levels
 - [[protocol_ICRU-87-CT-dose-image-quality]] — CTDI/CTDIvol/DLP, Size-Specific Dose Estimate (SSDE), CT image-quality (MTF, noise-power spectrum)
@@ -76,4 +85,6 @@ Catalog of all wiki pages. Updated on every ingest.
 ## Standards
 
 - [[standard_ICRP-radiation-protection]] — ICRP principles, dose quantities/limits, risk coefficients, mammography risk-benefit case
+- [[standard_ICRP-recommendations-history]] — ICRP Pub. 26 (1977)/60 (1990)/103 (2007) lineage, read from primary sources; verifies standard_ICRP-radiation-protection
+- [[standard_IAEA-safety-standards-hierarchy]] — SF-1 (10 fundamental safety principles) + GSR Part 3 (Basic Safety Standards); planned/emergency/existing exposure situations; confirms eye-lens dose-limit revision (150→20 mSv/yr)
 - [[standard_IAEA-medical-physics-ethics]] — professional ethics for CQMPs: biomedical/ICRP value frameworks, workplace ethics, research integrity, ten worked clinical dilemma scenarios

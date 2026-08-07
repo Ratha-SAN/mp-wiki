@@ -7,10 +7,9 @@
         "id": "2e3ac7e01f2f4bf8",
         "type": "leaf",
         "state": {
-          "type": "markdown",
+          "type": "image",
           "state": {
-            "file": "concept_biodosimetry-techniques.md",
-            "mode": "source"
+            "file": "assets/tcp-ntcp-therapeutic-gain.svg"
           }
         }
       }
@@ -68,7 +67,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "concept_biodosimetry-techniques.md",
+                "file": "assets/tcp-ntcp-therapeutic-gain.svg",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -88,15 +87,15 @@
   },
   "active": "2e3ac7e01f2f4bf8",
   "lastOpenFiles": [
+    "assets/tcp-ntcp-therapeutic-gain.svg",
+    "assets/sib-imrt-schematic.svg",
+    "protocol_NCRP-facility-shielding.md",
+    "concept_age-and-sex-radiosensitivity.md",
+    "protocol_TRS-277-absorbed-dose-photon-electron.md",
     "concept_biodosimetry-techniques.md",
     "protocol_ICRU-62-photon-beam-therapy-supplement.md",
     "protocol_ICRU-56-beta-ray-dosimetry.md",
     "concept_non-targeted-and-low-dose-effects.md",
-    "concept_fractionation.md",
-    "concept_ethics-and-risk-communication-in-radiation-protection.md",
-    "concept_cell-death-and-survival-curves.md",
-    "concept_cancer-molecular-biology.md",
-    "technique_SBRT.md",
-    "protocol_ICRU-74-patient-dosimetry-imaging.md"
+    "concept_fractionation.md"
   ]
 }
